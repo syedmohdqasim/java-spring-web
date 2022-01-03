@@ -56,6 +56,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body,
                                         ClientHttpRequestExecution execution) throws IOException {
         ClientHttpResponse httpResponse;
+	System.out.println("Client http req" + httpRequest);
 
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
