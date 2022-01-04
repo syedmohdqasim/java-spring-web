@@ -49,7 +49,10 @@ public class TracingAsyncRestTemplateInterceptor implements AsyncClientHttpReque
     @Override
     public ListenableFuture<ClientHttpResponse> intercept(final HttpRequest httpRequest,
                                                           byte[] body,
-                                                          AsyncClientHttpRequestExecution execution) throws IOException {
+                                   
+				   			  AsyncClientHttpRequestExecution execution) throws IOException {
+	//System.out.println("Async Client http" + httpRequest);
+	System.out.println("Async Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
 
         final Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false);
