@@ -78,10 +78,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
          * 2. if there is no active span then it can be handling of an async request or spring boot default error handling
          */
         Scope serverSpan = tracer.scopeManager().active();
-	System.out.println("Pre handle server span" + serverSpan);
+	System.out.println("*-* Pre handle server span" + serverSpan);
 	String opName =  handler instanceof HandlerMethod ?
                     ((HandlerMethod) handler).getMethod().getName() : null;
-	System.out.println("Operation name" +opName);
+	System.out.println("*-* Operation name" +opName);
         if (serverSpan == null) {
             if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
                 Span contd = (Span) httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED);
@@ -89,7 +89,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 httpServletRequest.removeAttribute(CONTINUATION_FROM_ASYNC_STARTED);
             } else {
                 // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
-		System.out.println("Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
+		System.out.println("*-* Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
 
                 serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
                         .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
