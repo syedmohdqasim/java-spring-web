@@ -75,21 +75,24 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     // SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
     // new HttpServletRequestExtractAdapter(httpRequest));
 
+    // toslali: get last active span (ASTRAEA may have disabled some in the middle)
     Scope serverSpan = tracer.scopeManager().active();
     // toSpanId()
 
-    System.out.println("*-*  headers now " + httpRequest.getHeaders()); 
-    System.out.println("*-*  ex span" + serverSpan.span());
-
-    System.out.println("*-* ex span context : " + serverSpan.span().context());
+    // System.out.println("*-*  headers now " + httpRequest.getHeaders()); 
+    // System.out.println("*-*  ex span" + serverSpan.span());
+    // System.out.println("*-* ex span context : " + serverSpan.span().context());
 
     // System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
     // extractedContext.
+
+    // toslali: start the span but not active!!!
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
 
 
             // tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+            // toslali: inject context of the last active span!!!
             tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
 
             // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
