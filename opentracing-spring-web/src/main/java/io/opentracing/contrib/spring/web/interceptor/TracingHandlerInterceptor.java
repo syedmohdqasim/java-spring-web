@@ -105,8 +105,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // .addReference(References.FOLLOWS_FROM, serverSpan.span().context())
             // .startActive(true);
 
-            httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, serverSpan.span().context());
-
+            // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, serverSpan.span().context());
+            for (HandlerInterceptorSpanDecorator decorator : decorators) {
+                decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
+            }
         }
 
         else{
