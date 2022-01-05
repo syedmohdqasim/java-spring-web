@@ -19,6 +19,12 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
+
+
+import io.opentracing.propagation.Format;
+import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
+
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
  * if there is no active request and a separate span for Spring's exception handling.
@@ -81,8 +87,13 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 	System.out.println("*-* Pre handle server span" + serverSpan);
 	String opName =  handler instanceof HandlerMethod ?
                     ((HandlerMethod) handler).getMethod().getName() : null;
-	System.out.println("*-* Operation name" +opName);
+    System.out.println("*-* Operation name" +opName);
+    
+
+
+
         if (serverSpan == null) {
+            System.out.println("*-* Null olmustu ");
             if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
                 Span contd = (Span) httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED);
                 serverSpan = tracer.scopeManager().activate(contd, false);
@@ -91,9 +102,27 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
 		System.out.println("*-* Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
 
-                serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-                        .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-                        .startActive(true);
+                // serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
+                //         .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
+                //         .startActive(true);
+
+                if (opName.equalsIgnoreCase("getRouteByTripId")){
+                    System.out.println("*-* Do not create soan for this");
+                }
+                else{
+                    
+                    System.out.println("*-* Creating the new span now");
+                    SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                    new HttpServletRequestExtractAdapter(httpServletRequest));
+
+                    serverSpan = tracer.buildSpan(opName)
+                    .asChildOf(extractedContext)
+                    // .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+                    .startActive(true);
+
+                }
+
+
             }
             Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
             activeSpanStack.push(serverSpan);
