@@ -91,53 +91,62 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     ((HandlerMethod) handler).getMethod().getName() : null;
     System.out.println("*-* Operation name for the current span" +opName);
     
-
+// tsl: aSTRAEA trial for specific operation name
         if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
             // serverSpan 
             // tracer.scopeManager()
             // serverSpan.
+            // tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+            serverSpan = tracer.buildSpan("mert")
+            .addReference(References.FOLLOWS_FROM, serverSpan.span().context())
+            .startActive(true);
+
         }
 
-        if (serverSpan == null) {
-            System.out.println("*-* Null olmustu ");
-            if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
-                Span contd = (Span) httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED);
-                serverSpan = tracer.scopeManager().activate(contd, false);
-                httpServletRequest.removeAttribute(CONTINUATION_FROM_ASYNC_STARTED);
-            } else {
-                // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
-		System.out.println("*-* Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
-
-                // serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-                //         .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-                //         .startActive(true);
-
-                if (opName.equalsIgnoreCase("getRouteByTripId")){
-                    System.out.println("*-* Do not create soan for this");
+        else{
+            if (serverSpan == null) {
+                System.out.println("*-* Null olmustu ");
+                if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
+                    Span contd = (Span) httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED);
+                    serverSpan = tracer.scopeManager().activate(contd, false);
+                    httpServletRequest.removeAttribute(CONTINUATION_FROM_ASYNC_STARTED);
+                } else {
+                    // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
+            System.out.println("*-* Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
+    
+                    serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
+                            .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
+                            .startActive(true);
+    
+                    // if (opName.equalsIgnoreCase("getRouteByTripId")){
+                    //     System.out.println("*-* Do not create soan for this");
+                    // }
+                    // else{
+                        
+                    //     System.out.println("*-* Creating the new span now");
+                    //     SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                    //     new HttpServletRequestExtractAdapter(httpServletRequest));
+    
+                    //     serverSpan = tracer.buildSpan(opName)
+                    //     .asChildOf(extractedContext)
+                    //     // .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+                    //     .startActive(true);
+    
+                    // }
+    
+    
                 }
-                else{
-                    
-                    System.out.println("*-* Creating the new span now");
-                    SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                    new HttpServletRequestExtractAdapter(httpServletRequest));
-
-                    serverSpan = tracer.buildSpan(opName)
-                    .asChildOf(extractedContext)
-                    // .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    .startActive(true);
-
-                }
-
-
+                Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
+                activeSpanStack.push(serverSpan);
             }
-            Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
-            activeSpanStack.push(serverSpan);
+    
+            for (HandlerInterceptorSpanDecorator decorator : decorators) {
+                decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
+            }
         }
 
-        for (HandlerInterceptorSpanDecorator decorator : decorators) {
-            decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
-        }
+        
 
         return true;
     }
@@ -146,6 +155,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     public void afterConcurrentHandlingStarted (
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler)
             throws Exception {
+
+                System.out.println("*-* 111");
 
         if (!isTraced(httpServletRequest)) {
             return;
@@ -171,12 +182,14 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         for (HandlerInterceptorSpanDecorator decorator : decorators) {
             decorator.onAfterConcurrentHandlingStarted(httpServletRequest, httpServletResponse, handler, span);
         }
+        System.out.println("*-* 222");
     }
 
     @Override
     public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                                 Object handler, Exception ex) throws Exception {
 
+                                    System.out.println("*-* 333");
         if (!isTraced(httpServletRequest)) {
             return;
         }
@@ -193,6 +206,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private void onAfterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                                    Object handler, Exception ex, Span span) {
+                                    System.out.println("*-* 444");
         for (HandlerInterceptorSpanDecorator decorator : decorators) {
             decorator.onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, span);
         }
