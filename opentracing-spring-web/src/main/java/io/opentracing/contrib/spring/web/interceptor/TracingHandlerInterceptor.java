@@ -40,6 +40,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private static final String SCOPE_STACK = TracingHandlerInterceptor.class.getName() + ".scopeStack";
     private static final String CONTINUATION_FROM_ASYNC_STARTED = TracingHandlerInterceptor.class.getName() + ".continuation";
 
+    //tsl: change active span
+    public static final String SERVER_SPAN_CONTEXT = TracingFilter.class.getName() + ".activeSpanContext";
+
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
@@ -98,9 +101,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // tracer.scopeManager()
             // serverSpan.
             // tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
-            serverSpan = tracer.buildSpan("mert")
-            .addReference(References.FOLLOWS_FROM, serverSpan.span().context())
-            .startActive(true);
+            // serverSpan = tracer.buildSpan("mert")
+            // .addReference(References.FOLLOWS_FROM, serverSpan.span().context())
+            // .startActive(true);
+
+            httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, serverSpan.span().context());
 
         }
 
