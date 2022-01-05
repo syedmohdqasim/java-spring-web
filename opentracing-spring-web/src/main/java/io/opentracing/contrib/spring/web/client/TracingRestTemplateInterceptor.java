@@ -85,7 +85,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
     // extractedContext.
-        try (org.springframework.context.annotation.Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
+        try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
 
 
