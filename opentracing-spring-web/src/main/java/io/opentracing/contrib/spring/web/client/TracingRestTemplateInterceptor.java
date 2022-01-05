@@ -83,43 +83,43 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     System.out.println("*-* ex span context : " + serverSpan.span().context());
 
-    System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
+    // System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
     // extractedContext.
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
-                .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
+                .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
 
 
-            tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
-                    new HttpHeadersCarrier(httpRequest.getHeaders()));
+            // tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+            tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
 
-            for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-                try {
-                    spanDecorator.onRequest(httpRequest, scope.span());
-                } catch (RuntimeException exDecorator) {
-                    log.error("Exception during decorating span", exDecorator);
-                }
-            }
+            // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+            //     try {
+            //         spanDecorator.onRequest(httpRequest, scope.span());
+            //     } catch (RuntimeException exDecorator) {
+            //         log.error("Exception during decorating span", exDecorator);
+            //     }
+            // }
 
             try {
                 httpResponse = execution.execute(httpRequest, body);
             } catch (Exception ex) {
-                for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-                    try {
-                        spanDecorator.onError(httpRequest, ex, scope.span());
-                    } catch (RuntimeException exDecorator) {
-                        log.error("Exception during decorating span", exDecorator);
-                    }
-                }
+                // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                //     try {
+                //         spanDecorator.onError(httpRequest, ex, scope.span());
+                //     } catch (RuntimeException exDecorator) {
+                //         log.error("Exception during decorating span", exDecorator);
+                //     }
+                // }
                 throw ex;
             }
 
-            for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-                try {
-                    spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
-                } catch (RuntimeException exDecorator) {
-                    log.error("Exception during decorating span", exDecorator);
-                }
-            }
+            // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+            //     try {
+            //         spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
+            //     } catch (RuntimeException exDecorator) {
+            //         log.error("Exception during decorating span", exDecorator);
+            //     }
+            // }
         }
 
         return httpResponse;
