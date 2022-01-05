@@ -1,3 +1,4 @@
+package io.opentracing.contrib.spring.web.interceptor;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import io.opentracing.propagation.TextMap;
 /**
  * Tracer extract adapter for {@link HttpServletRequest}.
  *
- * @author Mert Toslali
+ * @author Mert
  */
 public class HttpServletRequestExtractAdapter implements TextMap {
 
