@@ -17,6 +17,9 @@ import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import io.opentracing.SpanContext;
+
+import io.opentracing.contrib.spring.web.interceptor.HttpServletRequestExtractAdapter;
 
 /**
  * OpenTracing Spring RestTemplate integration.
