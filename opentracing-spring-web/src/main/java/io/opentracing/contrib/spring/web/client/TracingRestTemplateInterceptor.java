@@ -80,13 +80,16 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     // toSpanId()
 
     // System.out.println("*-*  headers now " + httpRequest.getHeaders()); 
-    // System.out.println("*-*  ex span" + serverSpan.span());
+    System.out.println("*-*  ex span" + serverSpan.span());
     // System.out.println("*-* ex span context : " + serverSpan.span().context());
 
     // System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
     // extractedContext.
 
-    // toslali: start the span but not active!!!
+    
+    boolean ASTRAEA = false;
+    if (ASTRAEA){ // if disabled by ASTRAEA ; toslali: start the span but not active!!!
+        System.out.println("*-*  Dsiabled by ASTRAEA");
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
 
@@ -95,35 +98,55 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // toslali: inject context of the last active span!!!
             tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
 
-            // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-            //     try {
-            //         spanDecorator.onRequest(httpRequest, scope.span());
-            //     } catch (RuntimeException exDecorator) {
-            //         log.error("Exception during decorating span", exDecorator);
-            //     }
-            // }
 
             try {
                 httpResponse = execution.execute(httpRequest, body);
             } catch (Exception ex) {
-                // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-                //     try {
-                //         spanDecorator.onError(httpRequest, ex, scope.span());
-                //     } catch (RuntimeException exDecorator) {
-                //         log.error("Exception during decorating span", exDecorator);
-                //     }
-                // }
+              
                 throw ex;
             }
 
-            // for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-            //     try {
-            //         spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
-            //     } catch (RuntimeException exDecorator) {
-            //         log.error("Exception during decorating span", exDecorator);
-            //     }
-            // }
         }
+    }
+    else{
+        System.out.println("*-*  Enabled by ASTRAEA");
+        try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
+    tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
+            new HttpHeadersCarrier(httpRequest.getHeaders()));
+
+    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+        try {
+            spanDecorator.onRequest(httpRequest, scope.span());
+        } catch (RuntimeException exDecorator) {
+            log.error("Exception during decorating span", exDecorator);
+        }
+    }
+
+    try {
+        httpResponse = execution.execute(httpRequest, body);
+    } catch (Exception ex) {
+        for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+            try {
+                spanDecorator.onError(httpRequest, ex, scope.span());
+            } catch (RuntimeException exDecorator) {
+                log.error("Exception during decorating span", exDecorator);
+            }
+        }
+        throw ex;
+    }
+
+    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+        try {
+            spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
+        } catch (RuntimeException exDecorator) {
+            log.error("Exception during decorating span", exDecorator);
+        }
+    }
+}
+
+    }
+        
 
         return httpResponse;
     }

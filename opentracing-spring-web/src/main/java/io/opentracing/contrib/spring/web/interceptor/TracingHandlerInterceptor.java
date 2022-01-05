@@ -84,13 +84,20 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
          * 2. if there is no active span then it can be handling of an async request or spring boot default error handling
          */
         Scope serverSpan = tracer.scopeManager().active();
-	System.out.println("*-* Pre handle server span" + serverSpan);
+    // System.out.println("*-* Pre handle server span" + serverSpan);
+    System.out.println("*-*  Pre handle ex span" + serverSpan.span());
+
 	String opName =  handler instanceof HandlerMethod ?
                     ((HandlerMethod) handler).getMethod().getName() : null;
-    System.out.println("*-* Operation name" +opName);
+    System.out.println("*-* Operation name for the current span" +opName);
     
 
-
+        if (opName.equalsIgnoreCase("getRouteByTripId")){
+            System.out.println("*-* Do not create soan for this");
+            // serverSpan 
+            // tracer.scopeManager()
+            // serverSpan.
+        }
 
         if (serverSpan == null) {
             System.out.println("*-* Null olmustu ");
