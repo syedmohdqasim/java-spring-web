@@ -72,15 +72,23 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     //             throw ex;
     //         }
         
-    SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-    new HttpServletRequestExtractAdapter(httpRequest));
-    // toSpanId()
-    System.out.println("*-*  ex context" + extractedContext);
+    // SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+    // new HttpServletRequestExtractAdapter(httpRequest));
 
-    System.out.println("*-* spanID : " + extractedContext.getBaggageItem("span_id"));
+    Scope serverSpan = tracer.scopeManager().active();
+    // toSpanId()
+
+    System.out.println("*-*  headers now " + httpRequest.getHeaders()); 
+    System.out.println("*-*  ex span" + serverSpan.span());
+
+    System.out.println("*-* ex span context : " + serverSpan.span().context());
+
+    System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
     // extractedContext.
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
+
+
             tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS,
                     new HttpHeadersCarrier(httpRequest.getHeaders()));
 
