@@ -90,13 +90,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     boolean ASTRAEA = true;
     if (ASTRAEA){ // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
         System.out.println("*-*  Dsiabled by ASTRAEA");
-        try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
-                .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
+        // try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
+        //         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
 
 
             // tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
             // toslali: inject context of the last active span!!!
-            // tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+            tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
             System.out.println("*-*  Injecting parent ctx for current span " + scope.span());
             
             try {
@@ -106,7 +106,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 throw ex;
             }
 
-        }
+        // }
     }
     else{
         System.out.println("*-*  Enabled by ASTRAEA");
