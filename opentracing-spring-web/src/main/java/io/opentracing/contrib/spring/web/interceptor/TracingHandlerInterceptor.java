@@ -99,14 +99,14 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-* gelmistik tracing handler");
         if (serverSpan != null){
             System.out.println("*-* gelmistik tracing handler2 ");
-            System.out.println("*-* PArent information: " +  serverSpan.span());
-            SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-            new HttpServletRequestExtractAdapter(httpServletRequest));
-            System.out.println("*-* Extracted context from parent " + extractedContext);
+            System.out.println("*-* PArent information at handler: " +  serverSpan.span());
+            
         }
 
+        SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+            new HttpServletRequestExtractAdapter(httpServletRequest));
+        System.out.println("*-* Extracted context from parent " + extractedContext);
 
-        
     
         // System.out.println("*-*  Pre handle ex span" + serverSpan == null ? "null" : serverSpan.span());
 
@@ -114,8 +114,18 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     ((HandlerMethod) handler).getMethod().getName() : null;
     System.out.println("*-* Operation name for the current span" +opName);
     
+
+    HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
+    .stream()
+    .collect(Collectors.toMap(
+        Function.identity(),
+        h -> Collections.list(httpServletRequest.getHeaders(h)),
+        (oldValue, newValue) -> newValue,
+        HttpHeaders::new
+    ));
+
         // tsl: aSTRAEA trial for specific operation name
-        if (opName.equalsIgnoreCase("getRouteByTripId s")){
+        if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
             // serverSpan 
             // tracer.scopeManager()
@@ -132,23 +142,28 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-* Extracted context now injected to current scope " + extractedContext);
             // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
 
-            HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
-            .stream()
-            .collect(Collectors.toMap(
-                Function.identity(),
-                h -> Collections.list(httpServletRequest.getHeaders(h)),
-                (oldValue, newValue) -> newValue,
-                HttpHeaders::new
-            ));
+
 
             tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
             
 
         }
         else{
+            System.out.println("*-* Creating server span now");
+
+            try (Scope scope = tracer.buildSpan(opName)
+        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER).startActive(true)) {
+            
+            tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
+            new HttpHeadersCarrier(httpHeaders));
+
+
             for (HandlerInterceptorSpanDecorator decorator : decorators) {
-                decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
+                decorator.onPreHandle(httpServletRequest, handler, scope.span());
             }
+
+        }
+            
         }
        
 
