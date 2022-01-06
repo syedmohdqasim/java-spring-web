@@ -3,11 +3,15 @@ package io.opentracing.contrib.spring.web.interceptor;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.method.HandlerMethod;
 
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -121,7 +125,18 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
 
         System.out.println("*-* Extracted context now injected to current scope " + extractedContext);
-            httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
+            // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
+
+            HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
+            .stream()
+            .collect(Collectors.toMap(
+                Function.identity(),
+                h -> Collections.list(httpRequest.getHeaders(h)),
+                (oldValue, newValue) -> newValue,
+                HttpHeaders::new
+            ));
+
+            tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
             
 
         }
