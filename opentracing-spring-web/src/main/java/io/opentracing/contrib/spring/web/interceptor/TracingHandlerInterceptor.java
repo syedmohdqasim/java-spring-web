@@ -135,8 +135,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // .addReference(References.FOLLOWS_FROM, serverSpan.span().context())
             // .startActive(true);
 
-            SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-        new HttpServletRequestExtractAdapter(httpServletRequest));
+        //     SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+        // new HttpServletRequestExtractAdapter(httpServletRequest));
 
 
         System.out.println("*-* Extracted context now injected to current scope " + extractedContext);
