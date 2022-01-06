@@ -78,9 +78,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler)
             throws Exception {
 
-        if (!isTraced(httpServletRequest)) {
-            return true;
-        }
+        // if (!isTraced(httpServletRequest)) {
+        //     return true;
+        // }
 
         /*
          * 1. check if there is an active span, it has been activated in servlet filter or in this interceptor (forward)
@@ -114,7 +114,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         }
 
         else{
-            
+
             if (serverSpan == null) {
                 System.out.println("*-* Null olmustu ");
                 if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
