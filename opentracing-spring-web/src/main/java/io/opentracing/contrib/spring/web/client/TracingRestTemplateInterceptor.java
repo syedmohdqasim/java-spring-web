@@ -3,6 +3,7 @@ package io.opentracing.contrib.spring.web.client;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -11,10 +12,12 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.util.MultiValueMap;
 
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.opentracing.SpanContext;
@@ -62,15 +65,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
     
 
-    // try {
-    //     // inject parent context
-    //     tracer.inject(scope.span().context(), 
-    //                 Format.Builtin.HTTP_HEADERS,
-    //                 new HttpHeadersCarrier(httpRequest.getHeaders()));
-    //             httpResponse = execution.execute(httpRequest, body);
-    //         } catch (Exception ex) {
-    //             throw ex;
-    //         }
+
         
     // SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
     // new HttpServletRequestExtractAdapter(httpRequest));
@@ -95,8 +90,40 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
 
             // tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
-            // toslali: inject context of the last active span!!!
-            tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+            // toslali: inject context of the last active span!!! if server span is null then we need to get it from request
+            // System.out.println("*-*  REQUESTS INCOMING SPAN " + );
+
+            if (serverSpan != null){
+                System.out.println("*-*  server span is here so  injecting" );
+                tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+            }
+            else{
+                System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
+
+                
+                // create scope as child of extracted context and do the same with the below
+
+                // MultivaluedMap<String, String> rawHeaders = httpHeaders.getRequestHeaders();
+                // MultivaluedMap<String, String> rawHeaders = httpHeaders.getRequestHeaders();
+
+                MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
+                final HashMap<String, String> headers = new HashMap<String, String>();
+                for (String key : rawHeaders.keySet()) {
+                    headers.put(key, rawHeaders.get(key).get(0));
+                }
+
+                try {
+                    SpanContext parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
+                    System.out.println("*-*  we have the parent now " +parentSpan);
+                    tracer.inject(parentSpan, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+
+                    
+                } catch (IllegalArgumentException e) {
+                    // spanBuilder = tracer.buildSpan(operationName);
+                }
+
+            }
+            
             // System.out.println("*-*  Injecting parent ctx for current span " + scope.span());
             
             try {
@@ -110,7 +137,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     }
     else{
         System.out.println("*-*  Enabled by ASTRAEA");
+
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
+        // if server span is null then we need extracted context as the parent as there is no active scope
+
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
     tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
             new HttpHeadersCarrier(httpRequest.getHeaders()));
@@ -151,3 +181,4 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         return httpResponse;
     }
 }
+
