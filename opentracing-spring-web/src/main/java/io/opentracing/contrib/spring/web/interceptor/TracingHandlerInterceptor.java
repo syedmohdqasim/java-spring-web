@@ -157,7 +157,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         }
             
-        }
+        
        
 
         // tsl: async requests are ignored for now
