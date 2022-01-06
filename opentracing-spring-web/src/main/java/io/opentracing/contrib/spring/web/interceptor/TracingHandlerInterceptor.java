@@ -21,6 +21,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.spring.web.client.HttpHeadersCarrier;
 import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 
 
@@ -28,6 +29,7 @@ import io.opentracing.contrib.web.servlet.filter.TracingFilter;
 import io.opentracing.propagation.Format;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import java.util.function.Function;
 
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
