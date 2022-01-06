@@ -95,6 +95,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             System.out.println("*-* gelmistik tracing handler2 ");
             System.out.println("*-* PArent information: " +  serverSpan.span());
         }
+
+
+        
     
         // System.out.println("*-*  Pre handle ex span" + serverSpan == null ? "null" : serverSpan.span());
 
@@ -113,7 +116,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // .addReference(References.FOLLOWS_FROM, serverSpan.span().context())
             // .startActive(true);
 
-            // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, serverSpan.span().context());
+            SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+        new HttpServletRequestExtractAdapter(httpRequest));
+
+            httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
+            
 
         }
         for (HandlerInterceptorSpanDecorator decorator : decorators) {
