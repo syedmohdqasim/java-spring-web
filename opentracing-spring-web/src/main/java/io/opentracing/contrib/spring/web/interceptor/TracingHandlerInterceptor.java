@@ -100,6 +100,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         if (serverSpan != null){
             System.out.println("*-* gelmistik tracing handler2 ");
             System.out.println("*-* PArent information: " +  serverSpan.span());
+            SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+            new HttpServletRequestExtractAdapter(httpServletRequest));
+            System.out.println("*-* Extracted context from parent " + extractedContext);
         }
 
 
