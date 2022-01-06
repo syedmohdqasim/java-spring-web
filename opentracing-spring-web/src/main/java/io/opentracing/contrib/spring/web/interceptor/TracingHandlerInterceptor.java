@@ -86,15 +86,17 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
          * 1. check if there is an active span, it has been activated in servlet filter or in this interceptor (forward)
          * 2. if there is no active span then it can be handling of an async request or spring boot default error handling
          */
+
+         //tsl: now the active should be parent so that we can set the span context properly according to enable/disable
         Scope serverSpan = tracer.scopeManager().active();
-    // System.out.println("*-* Pre handle server span" + serverSpan);
+    
     System.out.println("*-*  Pre handle ex span" + serverSpan.span());
 
 	String opName =  handler instanceof HandlerMethod ?
                     ((HandlerMethod) handler).getMethod().getName() : null;
     System.out.println("*-* Operation name for the current span" +opName);
     
-// tsl: aSTRAEA trial for specific operation name
+        // tsl: aSTRAEA trial for specific operation name
         if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
             // serverSpan 
@@ -112,6 +114,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         }
 
         else{
+            
             if (serverSpan == null) {
                 System.out.println("*-* Null olmustu ");
                 if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {

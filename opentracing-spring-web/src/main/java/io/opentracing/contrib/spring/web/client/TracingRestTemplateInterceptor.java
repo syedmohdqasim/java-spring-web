@@ -88,7 +88,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     
     boolean ASTRAEA = false;
-    if (ASTRAEA){ // if disabled by ASTRAEA ; toslali: start the span but not active!!!
+    if (ASTRAEA){ // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
         System.out.println("*-*  Dsiabled by ASTRAEA");
         try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                 .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
