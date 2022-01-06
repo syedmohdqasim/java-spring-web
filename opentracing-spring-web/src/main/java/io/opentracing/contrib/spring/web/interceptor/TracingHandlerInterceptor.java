@@ -125,7 +125,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     ));
 
         // tsl: aSTRAEA trial for specific operation name
-        if (opName.equalsIgnoreCase("getRouteByTripId")){
+        if (opName.equalsIgnoreCase("getRouteByTripId2")){
             System.out.println("*-* Do not create soan for this");
          
             // tsl: make the scope inactive
