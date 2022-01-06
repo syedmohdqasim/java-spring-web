@@ -133,7 +133,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             .stream()
             .collect(Collectors.toMap(
                 Function.identity(),
-                h -> Collections.list(httpRequest.getHeaders(h)),
+                h -> Collections.list(httpServletRequest.getHeaders(h)),
                 (oldValue, newValue) -> newValue,
                 HttpHeaders::new
             ));
