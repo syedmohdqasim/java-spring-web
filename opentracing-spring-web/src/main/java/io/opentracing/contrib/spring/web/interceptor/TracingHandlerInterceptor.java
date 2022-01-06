@@ -112,7 +112,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     System.out.println("*-* Operation name for the current span" +opName);
     
         // tsl: aSTRAEA trial for specific operation name
-        if (opName.equalsIgnoreCase("getRouteByTripId")){
+        if (opName.equalsIgnoreCase("getRouteByTripId s")){
             System.out.println("*-* Do not create soan for this");
             // serverSpan 
             // tracer.scopeManager()
@@ -142,9 +142,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             
 
         }
-        for (HandlerInterceptorSpanDecorator decorator : decorators) {
-            decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
+        else{
+            for (HandlerInterceptorSpanDecorator decorator : decorators) {
+                decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
+            }
         }
+       
 
         // tsl: async requests are ignored for now
         // else{
