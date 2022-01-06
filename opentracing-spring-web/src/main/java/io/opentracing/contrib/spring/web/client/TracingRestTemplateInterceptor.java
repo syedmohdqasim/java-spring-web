@@ -97,7 +97,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
             // toslali: inject context of the last active span!!!
             tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
-            System.out.println("*-*  Injecting parent ctx for current span " + scope.span());
+            // System.out.println("*-*  Injecting parent ctx for current span " + scope.span());
             
             try {
                 httpResponse = execution.execute(httpRequest, body);
