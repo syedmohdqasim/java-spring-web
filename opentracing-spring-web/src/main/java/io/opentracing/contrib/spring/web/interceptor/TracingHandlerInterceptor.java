@@ -89,8 +89,14 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
          //tsl: now the active should be parent so that we can set the span context properly according to enable/disable
         Scope serverSpan = tracer.scopeManager().active();
+        
+        System.out.println("*-* gelmistik tracing handler");
+        if (serverSpan != null){
+            System.out.println("*-* gelmistik tracing handler2 ");
+            System.out.println("*-* PArent information: " +  serverSpan.span());
+        }
     
-    System.out.println("*-*  Pre handle ex span" + serverSpan == null ? "null" : serverSpan.span());
+        // System.out.println("*-*  Pre handle ex span" + serverSpan == null ? "null" : serverSpan.span());
 
 	String opName =  handler instanceof HandlerMethod ?
                     ((HandlerMethod) handler).getMethod().getName() : null;
