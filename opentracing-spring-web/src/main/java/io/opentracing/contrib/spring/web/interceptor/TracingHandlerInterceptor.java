@@ -149,7 +149,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
 
             tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
-            httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
+            // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
             
 
         }
