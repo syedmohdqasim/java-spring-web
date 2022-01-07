@@ -25,8 +25,8 @@ import io.opentracing.SpanContext;
 import io.opentracing.contrib.spring.web.interceptor.HttpServletRequestExtractAdapter;
 
 /**
- * OpenTracing Spring RestTemplate integration.
- * This interceptor creates tracing data for all outgoing requests.
+ * OpenTracing Spring RestTemplate integration. This interceptor creates tracing
+ * data for all outgoing requests.
  *
  * @author Pavol Loffay
  */
@@ -37,20 +37,20 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private List<RestTemplateSpanDecorator> spanDecorators;
 
     public TracingRestTemplateInterceptor() {
-        this(GlobalTracer.get(), Collections.<RestTemplateSpanDecorator>singletonList(
-                new RestTemplateSpanDecorator.StandardTags()));
+        this(GlobalTracer.get(),
+                Collections.<RestTemplateSpanDecorator>singletonList(new RestTemplateSpanDecorator.StandardTags()));
     }
 
     /**
      * @param tracer tracer
      */
     public TracingRestTemplateInterceptor(Tracer tracer) {
-        this(tracer, Collections.<RestTemplateSpanDecorator>singletonList(
-                new RestTemplateSpanDecorator.StandardTags()));
+        this(tracer,
+                Collections.<RestTemplateSpanDecorator>singletonList(new RestTemplateSpanDecorator.StandardTags()));
     }
 
     /**
-     * @param tracer tracer
+     * @param tracer         tracer
      * @param spanDecorators list of decorators
      */
     public TracingRestTemplateInterceptor(Tracer tracer, List<RestTemplateSpanDecorator> spanDecorators) {
@@ -59,54 +59,33 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     }
 
     @Override
-    public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body,
-                                        ClientHttpRequestExecution execution) throws IOException {
+    public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
+            throws IOException {
         ClientHttpResponse httpResponse;
-    System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
-    
+        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
 
 
-        
-    // SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-    // new HttpServletRequestExtractAdapter(httpRequest));
+        // toslali: get last active span (ASTRAEA may have disabled some in the middle)
+        Scope serverSpan = tracer.scopeManager().active();
 
-    // toslali: get last active span (ASTRAEA may have disabled some in the middle)
-    Scope serverSpan = tracer.scopeManager().active();
-    // toSpanId()
-
-    // System.out.println("*-*  headers now " + httpRequest.getHeaders()); 
-    // System.out.println("*-*  ex span " + ((serverSpan != null) ? serverSpan.span(): "null now"));
-    if (serverSpan !=null){
-        System.out.println("*-*  ex span " + serverSpan.span());
-    }
-    else{
-        System.out.println("*-*  server ex span is null ");
-    }
-    // System.out.println("*-* ex span context : " + serverSpan.span().context());
-
-    // System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
-    // extractedContext.
-
-    
-    boolean ASTRAEA = false;
-    if (ASTRAEA){ // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
-        System.out.println("*-*  Dsiabled by ASTRAEA");
-        // try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
-        //         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(false)) {
+        if (serverSpan != null) {
+            System.out.println("*-*  ex span " + serverSpan.span());
+        } else {
+            System.out.println("*-*  server ex span is null ");
+        }
 
 
-            // tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
-            // toslali: inject context of the last active span!!! if server span is null then we need to get it from request
-            // System.out.println("*-*  REQUESTS INCOMING SPAN " + );
+        boolean ASTRAEA = false;
+        if (ASTRAEA) { // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+            System.out.println("*-*  Dsiabled by ASTRAEA");
 
-            if (serverSpan != null){
-                System.out.println("*-*  server span is here so  injecting" );
-                tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
-            }
-            else{
+            if (serverSpan != null) {
+                System.out.println("*-*  server span is here so  injecting");
+                tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS,
+                        new HttpHeadersCarrier(httpRequest.getHeaders()));
+            } else {
                 System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
 
-                
                 // create scope as child of extracted context and do the same with the below
 
                 // MultivaluedMap<String, String> rawHeaders = httpHeaders.getRequestHeaders();
@@ -119,72 +98,128 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }
 
                 try {
-                    SpanContext parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
-                    System.out.println("*-*  we have the parent now " +parentSpan);
-                    tracer.inject(parentSpan, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpRequest.getHeaders()));
+                    SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                            new TextMapExtractAdapter(headers));
+                    System.out.println("*-*  we have the parent now " + parentSpan);
+                    tracer.inject(parentSpanNow, Format.Builtin.HTTP_HEADERS,
+                            new HttpHeadersCarrier(httpRequest.getHeaders()));
 
-                    
                 } catch (IllegalArgumentException e) {
                     // spanBuilder = tracer.buildSpan(operationName);
+                    System.out.println("*-* Hatalar");
+                    throw e;
                 }
 
             }
-            
-            // System.out.println("*-*  Injecting parent ctx for current span " + scope.span());
-            
+
             try {
                 httpResponse = execution.execute(httpRequest, body);
             } catch (Exception ex) {
-              
+
                 throw ex;
             }
 
-        // }
-    }
-    else{
-        System.out.println("*-*  Enabled by ASTRAEA");
+            // }
+        } else {
+            System.out.println("*-*  Enabled by ASTRAEA");
+            SpanContext parentSpan;
 
-        try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
-        // if server span is null then we need extracted context as the parent as there is no active scope
+            if (serverSpan == null) {
+                System.out.println("*-*  Server span is null so getting span context from http headers");
+                MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
+                final HashMap<String, String> headers = new HashMap<String, String>();
+                for (String key : rawHeaders.keySet()) {
+                    headers.put(key, rawHeaders.get(key).get(0));
+                }
 
-        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
-    tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
-            new HttpHeadersCarrier(httpRequest.getHeaders()));
+                try {
+                    parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
+                    System.out.println("*-*  yeah we have the parent now " + parentSpan);
 
-    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-        try {
-            spanDecorator.onRequest(httpRequest, scope.span());
-        } catch (RuntimeException exDecorator) {
-            log.error("Exception during decorating span", exDecorator);
-        }
-    }
+                } catch (IllegalArgumentException e) {
+                    // spanBuilder = tracer.buildSpan(operationName);
+                    System.out.println("*-* Hatalar2");
+                    throw e;
+                }
 
-    try {
-        httpResponse = execution.execute(httpRequest, body);
-    } catch (Exception ex) {
-        for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-            try {
-                spanDecorator.onError(httpRequest, ex, scope.span());
-            } catch (RuntimeException exDecorator) {
-                log.error("Exception during decorating span", exDecorator);
+                // create span with parent
+                try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
+                        // if server span is null then we need extracted context as the parent as there is no active scope
+                        .asChildOf(parentSpan)
+                        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
+                    tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
+                            new HttpHeadersCarrier(httpRequest.getHeaders()));
+
+                    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                        try {
+                            spanDecorator.onRequest(httpRequest, scope.span());
+                        } catch (RuntimeException exDecorator) {
+                            log.error("Exception during decorating span", exDecorator);
+                        }
+                    }
+
+                    try {
+                        httpResponse = execution.execute(httpRequest, body);
+                    } catch (Exception ex) {
+                        for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                            try {
+                                spanDecorator.onError(httpRequest, ex, scope.span());
+                            } catch (RuntimeException exDecorator) {
+                                log.error("Exception during decorating span", exDecorator);
+                            }
+                        }
+                        throw ex;
+                    }
+
+                    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                        try {
+                            spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
+                        } catch (RuntimeException exDecorator) {
+                            log.error("Exception during decorating span", exDecorator);
+                        }
+                    }
+                }
+
+            } else {
+                try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
+                        .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
+                    tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
+                            new HttpHeadersCarrier(httpRequest.getHeaders()));
+
+                    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                        try {
+                            spanDecorator.onRequest(httpRequest, scope.span());
+                        } catch (RuntimeException exDecorator) {
+                            log.error("Exception during decorating span", exDecorator);
+                        }
+                    }
+
+                    try {
+                        httpResponse = execution.execute(httpRequest, body);
+                    } catch (Exception ex) {
+                        for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                            try {
+                                spanDecorator.onError(httpRequest, ex, scope.span());
+                            } catch (RuntimeException exDecorator) {
+                                log.error("Exception during decorating span", exDecorator);
+                            }
+                        }
+                        throw ex;
+                    }
+
+                    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
+                        try {
+                            spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
+                        } catch (RuntimeException exDecorator) {
+                            log.error("Exception during decorating span", exDecorator);
+                        }
+                    }
+                }
+
             }
-        }
-        throw ex;
-    }
 
-    for (RestTemplateSpanDecorator spanDecorator : spanDecorators) {
-        try {
-            spanDecorator.onResponse(httpRequest, httpResponse, scope.span());
-        } catch (RuntimeException exDecorator) {
-            log.error("Exception during decorating span", exDecorator);
         }
-    }
-}
-
-    }
-        
 
         return httpResponse;
     }
 }
-
