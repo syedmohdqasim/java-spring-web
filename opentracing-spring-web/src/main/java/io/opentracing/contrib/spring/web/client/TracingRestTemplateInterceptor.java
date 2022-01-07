@@ -100,7 +100,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 try {
                     SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headers));
-                    System.out.println("*-*  we have the parent now " + parentSpan);
+                    System.out.println("*-*  we have the parent now " + parentSpanNow);
                     tracer.inject(parentSpanNow, Format.Builtin.HTTP_HEADERS,
                             new HttpHeadersCarrier(httpRequest.getHeaders()));
 
