@@ -75,7 +75,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     // toSpanId()
 
     // System.out.println("*-*  headers now " + httpRequest.getHeaders()); 
-    System.out.println("*-*  ex span" + serverSpan.span());
+    // System.out.println("*-*  ex span " + ((serverSpan != null) ? serverSpan.span(): "null now"));
+    if (serverSpan !=null){
+        System.out.println("*-*  ex span " + serverSpan.span());
+    }
+    else{
+        System.out.println("*-*  server ex span is null ");
+    }
     // System.out.println("*-* ex span context : " + serverSpan.span().context());
 
     // System.out.println("*-* ex span context internals: " + serverSpan.span().getBaggageItem("span_id"));
