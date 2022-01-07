@@ -64,12 +64,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         ClientHttpResponse httpResponse;
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
 
-        MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
-        final HashMap<String, String> headers = new HashMap<String, String>();
-        for (String key : rawHeaders.keySet()) {
-            headers.put(key, rawHeaders.get(key).get(0));
+        MultiValueMap<String, String> rawHeaders22 = httpRequest.getHeaders();
+        final HashMap<String, String> headers22 = new HashMap<String, String>();
+        for (String key : rawHeaders22.keySet()) {
+            headers22.put(key, rawHeaders22.get(key).get(0));
         }
-        System.out.println("*-*  Headers now at the beginning of client  " + headers);
+        System.out.println("*-*  Headers now at the beginning of client  " + headers22);
 
 
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
