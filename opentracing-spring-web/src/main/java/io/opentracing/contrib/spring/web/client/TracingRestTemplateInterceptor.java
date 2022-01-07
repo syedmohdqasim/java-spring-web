@@ -131,7 +131,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 for (String key : rawHeaders.keySet()) {
                     headers.put(key, rawHeaders.get(key).get(0));
                 }
-
+                System.out.println("*-*  Headers now at client  " + headers);
                 try {
                     parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
                     System.out.println("*-*  yeah we have the parent now " + parentSpan);
