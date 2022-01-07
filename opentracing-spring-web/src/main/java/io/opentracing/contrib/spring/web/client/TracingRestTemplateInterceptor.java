@@ -64,6 +64,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         ClientHttpResponse httpResponse;
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
 
+        MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
+        final HashMap<String, String> headers = new HashMap<String, String>();
+        for (String key : rawHeaders.keySet()) {
+            headers.put(key, rawHeaders.get(key).get(0));
+        }
+        System.out.println("*-*  Headers now at the beginning of client  " + headers);
+
 
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
         Scope serverSpan = tracer.scopeManager().active();
@@ -135,6 +142,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 try {
                     parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
                     System.out.println("*-*  yeah we have the parent now " + parentSpan);
+                    
+                    // (SpanContext) servletRequest.getAttribute(SERVER_SPAN_CONTEXT)
 
                 } catch (IllegalArgumentException e) {
                     // spanBuilder = tracer.buildSpan(operationName);
