@@ -125,7 +125,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     ));
 
         // tsl: aSTRAEA trial for specific operation name
-        if (opName.equalsIgnoreCase("getRouteByTripId2")){
+        if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
          
             // tsl: make the scope inactive
@@ -135,6 +135,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // new HttpServletRequestExtractAdapter(httpServletRequest));
 
         System.out.println("*-* Extracted context now injected to current scope " + extractedContext);
+        System.out.println("*-* Extracted headers " + httpHeaders);
             // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
 
             tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
