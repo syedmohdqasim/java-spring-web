@@ -123,6 +123,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         (oldValue, newValue) -> newValue,
         HttpHeaders::new
     ));
+    System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
 
         // tsl: aSTRAEA trial for specific operation name
         if (opName.equalsIgnoreCase("getRouteByTripId")){
@@ -135,10 +136,20 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // new HttpServletRequestExtractAdapter(httpServletRequest));
 
         System.out.println("*-* Extracted context now injected to current scope " + extractedContext);
-        System.out.println("*-* Extracted headers " + httpHeaders);
+
+        HttpHeaders httpHeaders2 = Collections.list(httpServletRequest.getHeaderNames())
+        .stream()
+        .collect(Collectors.toMap(
+            Function.identity(),
+            h -> Collections.list(httpServletRequest.getHeaders(h)),
+            (oldValue, newValue) -> newValue,
+            HttpHeaders::new
+        ));
+        System.out.println("*-* Extracted headers now" + httpHeaders2);
             // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
 
             tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
+            httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
             
 
         }
