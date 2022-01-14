@@ -31,6 +31,11 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.function.Function;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
  * if there is no active request and a separate span for Spring's exception handling.
@@ -124,7 +129,17 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // tsl: make the scope inactive
             // serverSpan.close();
             // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
-            serverSpan.span().setBaggageItem("astreaea", extractedContext.toString());
+            
+            // serverSpan.span().context() = 
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(extractedContext);
+            oos.flush();
+            byte [] data = bos.toByteArray();
+            String contextInBag = new String(data);
+            serverSpan.span().setBaggageItem("astreaea", contextInBag);
+
             System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astreaea"));
 
             // httpServletRequest.setAttribute("mertiko", serverSpan);

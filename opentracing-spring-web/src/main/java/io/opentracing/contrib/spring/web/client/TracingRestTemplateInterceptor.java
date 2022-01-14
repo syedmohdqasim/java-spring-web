@@ -22,6 +22,13 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.opentracing.SpanContext;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import io.opentracing.contrib.spring.web.interceptor.HttpServletRequestExtractAdapter;
 
 /**
@@ -66,6 +73,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     //     this.spanContext = sc;
     // }
 
+    private static Object getObject(byte[] byteArr) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(byteArr);
+        ObjectInput in = new ObjectInputStream(bis);
+        return in.readObject();
+      }
+
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
@@ -89,9 +102,18 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             System.out.println("*-*  server ex span is null ");
         }
 
-        if (serverSpan.span().getBaggageItem("astreaea") != null){
-            System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astreaea"));
-            parentSpanContext = (SpanContext) serverSpan.span().getBaggageItem("astreaea");
+        if (serverSpan.span().getBaggageItem("astraea") != null){
+            System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
+            // parentSpanContext = (SpanContext) serverSpan.span().getBaggageItem("astreaea");
+            // parentSpanContext  = new SpanContext("eq","eq","eq");
+            String contextInBag = serverSpan.span().getBaggageItem("astraea");
+            byte[] data = contextInBag.getBytes();
+            try {
+            parentSpanContext = (SpanContext) getObject(data);
+            } catch(ClassNotFoundException e){
+                System.out.println("*-*  Class not found~!!! " + parentSpanContext);
+            }
+
             System.out.println("*-*  Cokemelli2 " + parentSpanContext);
             serverSpan.close();
             serverDisabled = true;
