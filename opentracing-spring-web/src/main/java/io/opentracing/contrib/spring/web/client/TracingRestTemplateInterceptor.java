@@ -36,6 +36,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private Tracer tracer;
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
+    private serverDisabled = false;
 
     public TracingRestTemplateInterceptor() {
         this(GlobalTracer.get(),
@@ -90,7 +91,14 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
         if (serverSpan.span().getBaggageItem("astreaea") != null){
             System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astreaea"));
+            parentSpanContext = (SpanContext) serverSpan.span().getBaggageItem("astreaea");
+            System.out.println("*-*  Cokemelli2 " + parentSpanContext);
+            serverSpan.close();
+            serverDisabled = true;
+            // if astraea is set, that means disable server span (close()) and get spancontext from this bagg item
         }
+
+        
 
 
         boolean ASTRAEA = false;
@@ -143,30 +151,31 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             System.out.println("*-*  Enabled by ASTRAEA");
             SpanContext parentSpan;
 
-            if (serverSpan == null) {
-                System.out.println("*-*  Server span is null so getting span context from http headers");
-                MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
-                final HashMap<String, String> headers = new HashMap<String, String>();
-                for (String key : rawHeaders.keySet()) {
-                    headers.put(key, rawHeaders.get(key).get(0));
-                }
-                System.out.println("*-*  Headers now at client  " + headers);
-                try {
-                    parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
-                    System.out.println("*-*  yeah we have the parent now " + parentSpan);
+            if (serverDisabled) {
+                System.out.println("*-*  Server span is disablled so getting span context from bagg");
+                // MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
+                // final HashMap<String, String> headers = new HashMap<String, String>();
+                // for (String key : rawHeaders.keySet()) {
+                //     headers.put(key, rawHeaders.get(key).get(0));
+                // }
+                // // System.out.println("*-*  Headers now at client  " + headers);
+                // try {
+                //     parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
+                //     System.out.println("*-*  yeah we have the parent now " + parentSpan);
                     
-                    // (SpanContext) servletRequest.getAttribute(SERVER_SPAN_CONTEXT)
+                //     // (SpanContext) servletRequest.getAttribute(SERVER_SPAN_CONTEXT)
 
-                } catch (IllegalArgumentException e) {
-                    // spanBuilder = tracer.buildSpan(operationName);
-                    System.out.println("*-* Hatalar2");
-                    throw e;
-                }
+                // } catch (IllegalArgumentException e) {
+                //     // spanBuilder = tracer.buildSpan(operationName);
+                //     System.out.println("*-* Hatalar2");
+                //     throw e;
+                // }
 
                 // create span with parent
                 try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                         // if server span is null then we need extracted context as the parent as there is no active scope
-                        .asChildOf(parentSpan)
+                        // .asChildOf(parentSpan)
+                        .asChildOf(parentSpanContext)
                         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
                     tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
                             new HttpHeadersCarrier(httpRequest.getHeaders()));
