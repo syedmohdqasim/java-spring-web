@@ -88,18 +88,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         //     return true;
         // }
 
-        /*
-         * 1. check if there is an active span, it has been activated in servlet filter or in this interceptor (forward)
-         * 2. if there is no active span then it can be handling of an async request or spring boot default error handling
-         */
-
          //tsl: now the active should be parent so that we can set the span context properly according to enable/disable
         Scope serverSpan = tracer.scopeManager().active();
         
         System.out.println("*-* gelmistik tracing handler");
         if (serverSpan != null){
-            System.out.println("*-* gelmistik tracing handler2 ");
-            System.out.println("*-* PArent information at handler: " +  serverSpan.span());
+            System.out.println("*-* Server information at handler: " +  serverSpan.span());
             
         }
 
@@ -107,23 +101,19 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             new HttpServletRequestExtractAdapter(httpServletRequest));
         System.out.println("*-* Extracted context from parent " + extractedContext);
 
-    
-        // System.out.println("*-*  Pre handle ex span" + serverSpan == null ? "null" : serverSpan.span());
+        String opName =  handler instanceof HandlerMethod ?
+                        ((HandlerMethod) handler).getMethod().getName() : null;
+        System.out.println("*-* Operation name for the current span" +opName);
 
-	String opName =  handler instanceof HandlerMethod ?
-                    ((HandlerMethod) handler).getMethod().getName() : null;
-    System.out.println("*-* Operation name for the current span" +opName);
-    
-
-    HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
-    .stream()
-    .collect(Collectors.toMap(
-        Function.identity(),
-        h -> Collections.list(httpServletRequest.getHeaders(h)),
-        (oldValue, newValue) -> newValue,
-        HttpHeaders::new
-    ));
-    System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
+        HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
+        .stream()
+        .collect(Collectors.toMap(
+            Function.identity(),
+            h -> Collections.list(httpServletRequest.getHeaders(h)),
+            (oldValue, newValue) -> newValue,
+            HttpHeaders::new
+        ));
+        System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
 
         // tsl: aSTRAEA trial for specific operation name
         if (opName.equalsIgnoreCase("getRouteByTripId")){
@@ -132,35 +122,23 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // tsl: make the scope inactive
             serverSpan.close();
 
-        //     SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-        // new HttpServletRequestExtractAdapter(httpServletRequest));
-
-        System.out.println("*-* Extracted context now injected to current scope " + extractedContext);
-
-        HttpHeaders httpHeaders2 = Collections.list(httpServletRequest.getHeaderNames())
-        .stream()
-        .collect(Collectors.toMap(
-            Function.identity(),
-            h -> Collections.list(httpServletRequest.getHeaders(h)),
-            (oldValue, newValue) -> newValue,
-            HttpHeaders::new
-        ));
-        System.out.println("*-* Extracted headers now" + httpHeaders2);
+            // tracer.scopeManager().activate(contd, false);
+            // instead set baggage to inactive
+            // serverSpan.span().setBaggageItem("astreaea", "1");
+        
             // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
 
-            tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
-            HttpHeaders httpHeaders3 = Collections.list(httpServletRequest.getHeaderNames())
-            .stream()
-            .collect(Collectors.toMap(
-                Function.identity(),
-                h -> Collections.list(httpServletRequest.getHeaders(h)),
-                (oldValue, newValue) -> newValue,
-                HttpHeaders::new
-            ));
-            System.out.println("*-* Extracted headers now" + httpHeaders3);
+            // tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
+            // HttpHeaders httpHeaders3 = Collections.list(httpServletRequest.getHeaderNames())
+            // .stream()
+            // .collect(Collectors.toMap(
+            //     Function.identity(),
+            //     h -> Collections.list(httpServletRequest.getHeaders(h)),
+            //     (oldValue, newValue) -> newValue,
+            //     HttpHeaders::new
+            // ));
+            // System.out.println("*-* Extracted headers now" + httpHeaders3);
             // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
-            
-
         }
         else{
         //     System.out.println("*-* Creating server span now");
@@ -172,10 +150,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         //     new HttpHeadersCarrier(httpHeaders));
 
 
-        for (HandlerInterceptorSpanDecorator decorator : decorators) {
-            decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
-        }
-
+            for (HandlerInterceptorSpanDecorator decorator : decorators) {
+                decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
+            }
         }
             
         

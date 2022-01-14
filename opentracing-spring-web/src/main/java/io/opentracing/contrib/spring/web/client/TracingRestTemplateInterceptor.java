@@ -35,6 +35,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     private Tracer tracer;
     private List<RestTemplateSpanDecorator> spanDecorators;
+    private SpanContext parentSpanContext;
 
     public TracingRestTemplateInterceptor() {
         this(GlobalTracer.get(),
@@ -57,6 +58,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         this.tracer = tracer;
         this.spanDecorators = new ArrayList<>(spanDecorators);
     }
+
+    // public TracingRestTemplateInterceptor(Tracer tracer, List<RestTemplateSpanDecorator> spanDecorators, SpanContext sc) {
+    //     this.tracer = tracer;
+    //     this.spanDecorators = new ArrayList<>(spanDecorators);
+    //     this.spanContext = sc;
+    // }
 
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
@@ -88,6 +95,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
             if (serverSpan != null) {
                 System.out.println("*-*  server span is here so  injecting");
+                // tsl: that  works for disabling client span -- paassing the server span context
                 tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             } else {
@@ -95,8 +103,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
                 // create scope as child of extracted context and do the same with the below
 
-                // MultivaluedMap<String, String> rawHeaders = httpHeaders.getRequestHeaders();
-                // MultivaluedMap<String, String> rawHeaders = httpHeaders.getRequestHeaders();
+           
 
                 MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
                 final HashMap<String, String> headers = new HashMap<String, String>();
@@ -105,6 +112,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }
 
                 try {
+                    // tsl: not working -- parent context is not here
                     SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headers));
                     System.out.println("*-*  we have the parent now " + parentSpanNow);
