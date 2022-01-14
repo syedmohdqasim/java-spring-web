@@ -88,6 +88,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             System.out.println("*-*  server ex span is null ");
         }
 
+        if (serverSpan.span().getBaggageItem("astreaea")){
+            System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astreaea"));
+        }
+
 
         boolean ASTRAEA = false;
         if (ASTRAEA) { // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!

@@ -118,15 +118,17 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
 
         // tsl: aSTRAEA trial for specific operation name
-        if (opName.equalsIgnoreCase("getRouteByTripId2")){
+        if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
          
             // tsl: make the scope inactive
-            serverSpan.close();
+            // serverSpan.close();
+            // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
+            serverSpan.span().setBaggageItem("astreaea", extractedContext);
 
-            httpServletRequest.setAttribute("mertiko", serverSpan);
+            // httpServletRequest.setAttribute("mertiko", serverSpan);
 
-            // tracer.scopeManager().activate(contd, false);
+            // tracer.scopeManager().activate(extractedContext., false);
             // instead set baggage to inactive
             // serverSpan.span().setBaggageItem("astreaea", "1");
         
