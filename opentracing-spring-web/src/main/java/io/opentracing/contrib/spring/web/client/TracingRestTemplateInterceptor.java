@@ -88,7 +88,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             System.out.println("*-*  server ex span is null ");
         }
 
-        if (serverSpan.span().getBaggageItem("astreaea")){
+        if (serverSpan.span().getBaggageItem("astreaea") != null){
             System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astreaea"));
         }
 

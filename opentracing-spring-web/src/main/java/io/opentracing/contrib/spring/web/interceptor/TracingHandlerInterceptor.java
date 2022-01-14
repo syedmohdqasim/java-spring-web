@@ -124,7 +124,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // tsl: make the scope inactive
             // serverSpan.close();
             // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
-            serverSpan.span().setBaggageItem("astreaea", extractedContext);
+            serverSpan.span().setBaggageItem("astreaea", extractedContext.toString());
+            System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astreaea"));
 
             // httpServletRequest.setAttribute("mertiko", serverSpan);
 
