@@ -36,7 +36,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private Tracer tracer;
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
-    private serverDisabled = false;
+    private boolean serverDisabled = false;
 
     public TracingRestTemplateInterceptor() {
         this(GlobalTracer.get(),
