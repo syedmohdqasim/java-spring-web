@@ -49,6 +49,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     //tsl: change active span
     public static final String SERVER_SPAN_CONTEXT = TracingFilter.class.getName() + ".activeSpanContext";
 
+
+
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
@@ -121,6 +123,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
          
             // tsl: make the scope inactive
             serverSpan.close();
+
+            httpServletRequest.setAttribute("mertiko", serverSpan);
 
             // tracer.scopeManager().activate(contd, false);
             // instead set baggage to inactive
