@@ -71,19 +71,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         this.spanDecorators = new ArrayList<>(spanDecorators);
     }
 
-    // public TracingRestTemplateInterceptor(Tracer tracer, List<RestTemplateSpanDecorator> spanDecorators, SpanContext sc) {
-    //     this.tracer = tracer;
-    //     this.spanDecorators = new ArrayList<>(spanDecorators);
-    //     this.spanContext = sc;
-    // }
-
 
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         ClientHttpResponse httpResponse;
         boolean serverDisabled = false;
-        
+
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
 
         MultiValueMap<String, String> rawHeaders22 = httpRequest.getHeaders();
@@ -105,41 +99,21 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
         if (serverSpan.span().getBaggageItem("astraea") != null){
             System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
-            // parentSpanContext = (SpanContext) serverSpan.span().getBaggageItem("astreaea");
-            // parentSpanContext  = new SpanContext("eq","eq","eq");
-            String contextInBag = serverSpan.span().getBaggageItem("astraea");
 
-            
+            String contextInBag = serverSpan.span().getBaggageItem("astraea");            
             final HashMap<String, String> headers = new HashMap<String, String>();
             headers.put("uber-trace-id", contextInBag);
             parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headers));
 
-
-
-
-            // TextMap textMapExtractAdapter = new TextMapExtractAdapter(contextInBag);
-            // //ExternalProcessSpanContext
-            // parentSpanContext = tracer.extract(Format.Builtin.TEXT_MAP, textMapExtractAdapter);
-
-            // parentSpanContext = (SpanContext) contextInBag;
-            // parentSpanContext = tracer.extract()
-            // parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-            //                 new TextMapExtractAdapter(headers));
-           
-
             System.out.println("*-*  Cokemelli2 " + parentSpanContext);
 
-            serverSpan.span().getBaggageItem("astraea");
             serverSpan.close();
             serverDisabled = true;
-            // clear baggage item, we do not need it anymore
-
-            // if astraea is set, that means disable server span (close()) and get spancontext from this bagg item
         }
 
         boolean ASTRAEA = false;
-        if (ASTRAEA) { // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+        if (ASTRAEA) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             System.out.println("*-*  Dsiabled by ASTRAEA");
 
             if (serverSpan != null) {
@@ -151,29 +125,6 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
                 tracer.inject(parentSpanContext, Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
-
-                // create scope as child of extracted context and do the same with the below
-
-                // MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
-                // final HashMap<String, String> headers = new HashMap<String, String>();
-                // for (String key : rawHeaders.keySet()) {
-                //     headers.put(key, rawHeaders.get(key).get(0));
-                // }
-
-                // try {
-                //     // tsl: not working -- parent context is not here
-                //     SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                //             new TextMapExtractAdapter(headers));
-                //     System.out.println("*-*  we have the parent now " + parentSpanNow);
-                //     tracer.inject(parentSpanNow, Format.Builtin.HTTP_HEADERS,
-                //             new HttpHeadersCarrier(httpRequest.getHeaders()));
-
-                // } catch (IllegalArgumentException e) {
-                //     // spanBuilder = tracer.buildSpan(operationName);
-                //     System.out.println("*-* Hatalar");
-                //     throw e;
-                // }
-
             }
 
             try {
@@ -182,31 +133,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
                 throw ex;
             }
-
-            // }
+          
         } else {
-            System.out.println("*-*  Enabled by ASTRAEA");
+            System.out.println("*-*  Client Enabled by ASTRAEA");
             SpanContext parentSpan;
 
-            if (serverDisabled) {
+            if (serverDisabled) { // if server span is disabled get the span context from baggage i.e., astraea -> parentSpanContext
                 System.out.println("*-*  Server span is disablled so getting span context from bagg");
-                // MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
-                // final HashMap<String, String> headers = new HashMap<String, String>();
-                // for (String key : rawHeaders.keySet()) {
-                //     headers.put(key, rawHeaders.get(key).get(0));
-                // }
-                // // System.out.println("*-*  Headers now at client  " + headers);
-                // try {
-                //     parentSpan = tracer.extract(Format.Builtin.HTTP_HEADERS, new TextMapExtractAdapter(headers));
-                //     System.out.println("*-*  yeah we have the parent now " + parentSpan);
-                    
-                //     // (SpanContext) servletRequest.getAttribute(SERVER_SPAN_CONTEXT)
-
-                // } catch (IllegalArgumentException e) {
-                //     // spanBuilder = tracer.buildSpan(operationName);
-                //     System.out.println("*-* Hatalar2");
-                //     throw e;
-                // }
 
                 // create span with parent
                 try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())

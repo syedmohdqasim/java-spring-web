@@ -128,60 +128,23 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
          
-            // tsl: make the scope inactive
+            // tsl: make the scope inactive -- we do this at client now
             // serverSpan.close();
             // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
-            
-            // serverSpan.span().context() = 
-
-            // ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            // ObjectOutputStream oos = new ObjectOutputStream(bos);
-            // oos.writeObject(extractedContext);
-            // oos.flush();
-            // byte [] data = bos.toByteArray();
-            // String contextInBag = new String(data);
+        
             serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
 
             System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
 
-            // httpServletRequest.setAttribute("mertiko", serverSpan);
-
-            // tracer.scopeManager().activate(extractedContext., false);
-            // instead set baggage to inactive
-            // serverSpan.span().setBaggageItem("astreaea", "1");
-        
-            // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
-
-            // tracer.inject(extractedContext, Format.Builtin.HTTP_HEADERS, new HttpHeadersCarrier(httpHeaders));
-            // HttpHeaders httpHeaders3 = Collections.list(httpServletRequest.getHeaderNames())
-            // .stream()
-            // .collect(Collectors.toMap(
-            //     Function.identity(),
-            //     h -> Collections.list(httpServletRequest.getHeaders(h)),
-            //     (oldValue, newValue) -> newValue,
-            //     HttpHeaders::new
-            // ));
-            // System.out.println("*-* Extracted headers now" + httpHeaders3);
-            // httpServletRequest.setAttribute(SERVER_SPAN_CONTEXT, extractedContext);
+           
         }
-        else{
+        else{ // we do nothing as server span is enabled
         //     System.out.println("*-* Creating server span now");
-
-        //     try (Scope scope = tracer.buildSpan(opName)
-        // .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER).startActive(true)) {
-            
-        //     tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
-        //     new HttpHeadersCarrier(httpHeaders));
-
-
             for (HandlerInterceptorSpanDecorator decorator : decorators) {
                 decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
             }
         }
             
-        
-       
-
         // tsl: async requests are ignored for now
         // else{
 
