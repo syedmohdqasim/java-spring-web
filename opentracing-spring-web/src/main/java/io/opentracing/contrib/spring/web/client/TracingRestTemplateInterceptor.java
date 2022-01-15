@@ -17,6 +17,8 @@ import org.springframework.util.MultiValueMap;
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.propagation.Format;
+import io.opentracing.propagation.TextMap;
+// import io.opentracing.propagation.TextMapAdapter;
 import io.opentracing.propagation.TextMapExtractAdapter;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -28,6 +30,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+
+import java.util.Map;
 
 import io.opentracing.contrib.spring.web.interceptor.HttpServletRequestExtractAdapter;
 
@@ -73,11 +77,6 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     //     this.spanContext = sc;
     // }
 
-    private static Object getObject(byte[] byteArr) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(byteArr);
-        ObjectInput in = new ObjectInputStream(bis);
-        return in.readObject();
-      }
 
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
@@ -107,21 +106,31 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // parentSpanContext = (SpanContext) serverSpan.span().getBaggageItem("astreaea");
             // parentSpanContext  = new SpanContext("eq","eq","eq");
             String contextInBag = serverSpan.span().getBaggageItem("astraea");
-            byte[] data = contextInBag.getBytes();
-            try {
-            parentSpanContext = (SpanContext) getObject(data);
-            } catch(ClassNotFoundException e){
-                System.out.println("*-*  Class not found~!!! " + parentSpanContext);
-            }
+
+            
+            final HashMap<String, String> headers = new HashMap<String, String>();
+            headers.put("uber-trace-id", contextInBag);
+            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                            new TextMapExtractAdapter(headers));
+
+
+
+
+            // TextMap textMapExtractAdapter = new TextMapExtractAdapter(contextInBag);
+            // //ExternalProcessSpanContext
+            // parentSpanContext = tracer.extract(Format.Builtin.TEXT_MAP, textMapExtractAdapter);
+
+            // parentSpanContext = (SpanContext) contextInBag;
+            // parentSpanContext = tracer.extract()
+            // parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+            //                 new TextMapExtractAdapter(headers));
+           
 
             System.out.println("*-*  Cokemelli2 " + parentSpanContext);
             serverSpan.close();
             serverDisabled = true;
             // if astraea is set, that means disable server span (close()) and get spancontext from this bagg item
         }
-
-        
-
 
         boolean ASTRAEA = false;
         if (ASTRAEA) { // if disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
@@ -134,30 +143,30 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             } else {
                 System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
+                tracer.inject(parentSpanContext, Format.Builtin.HTTP_HEADERS,
+                        new HttpHeadersCarrier(httpRequest.getHeaders()));
 
                 // create scope as child of extracted context and do the same with the below
 
-           
+                // MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
+                // final HashMap<String, String> headers = new HashMap<String, String>();
+                // for (String key : rawHeaders.keySet()) {
+                //     headers.put(key, rawHeaders.get(key).get(0));
+                // }
 
-                MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
-                final HashMap<String, String> headers = new HashMap<String, String>();
-                for (String key : rawHeaders.keySet()) {
-                    headers.put(key, rawHeaders.get(key).get(0));
-                }
+                // try {
+                //     // tsl: not working -- parent context is not here
+                //     SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                //             new TextMapExtractAdapter(headers));
+                //     System.out.println("*-*  we have the parent now " + parentSpanNow);
+                //     tracer.inject(parentSpanNow, Format.Builtin.HTTP_HEADERS,
+                //             new HttpHeadersCarrier(httpRequest.getHeaders()));
 
-                try {
-                    // tsl: not working -- parent context is not here
-                    SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                            new TextMapExtractAdapter(headers));
-                    System.out.println("*-*  we have the parent now " + parentSpanNow);
-                    tracer.inject(parentSpanNow, Format.Builtin.HTTP_HEADERS,
-                            new HttpHeadersCarrier(httpRequest.getHeaders()));
-
-                } catch (IllegalArgumentException e) {
-                    // spanBuilder = tracer.buildSpan(operationName);
-                    System.out.println("*-* Hatalar");
-                    throw e;
-                }
+                // } catch (IllegalArgumentException e) {
+                //     // spanBuilder = tracer.buildSpan(operationName);
+                //     System.out.println("*-* Hatalar");
+                //     throw e;
+                // }
 
             }
 

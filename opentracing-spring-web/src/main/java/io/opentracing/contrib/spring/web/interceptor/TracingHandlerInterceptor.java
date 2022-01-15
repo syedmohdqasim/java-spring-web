@@ -132,15 +132,15 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             
             // serverSpan.span().context() = 
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-            oos.writeObject(extractedContext);
-            oos.flush();
-            byte [] data = bos.toByteArray();
-            String contextInBag = new String(data);
-            serverSpan.span().setBaggageItem("astreaea", contextInBag);
+            // ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            // ObjectOutputStream oos = new ObjectOutputStream(bos);
+            // oos.writeObject(extractedContext);
+            // oos.flush();
+            // byte [] data = bos.toByteArray();
+            // String contextInBag = new String(data);
+            serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
 
-            System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astreaea"));
+            System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
 
             // httpServletRequest.setAttribute("mertiko", serverSpan);
 
