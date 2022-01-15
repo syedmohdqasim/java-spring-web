@@ -112,6 +112,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                         ((HandlerMethod) handler).getMethod().getName() : null;
         System.out.println("*-* Operation name for the current span" +opName);
 
+
+        // tsl: delete below later
         HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
         .stream()
         .collect(Collectors.toMap(
@@ -122,7 +124,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         ));
         System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
 
-        // tsl: aSTRAEA trial for specific operation name
+        // tsl: aSTRAEA baggage item to pass parent context into client if serverspan is disabled
         if (opName.equalsIgnoreCase("getRouteByTripId")){
             System.out.println("*-* Do not create soan for this");
          

@@ -47,7 +47,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private Tracer tracer;
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
-    private boolean serverDisabled = false;
+    // private boolean serverDisabled = false;
 
     public TracingRestTemplateInterceptor() {
         this(GlobalTracer.get(),
@@ -82,6 +82,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         ClientHttpResponse httpResponse;
+        boolean serverDisabled = false;
+        
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
 
         MultiValueMap<String, String> rawHeaders22 = httpRequest.getHeaders();
@@ -127,8 +129,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
            
 
             System.out.println("*-*  Cokemelli2 " + parentSpanContext);
+
+            serverSpan.span().getBaggageItem("astraea");
             serverSpan.close();
             serverDisabled = true;
+            // clear baggage item, we do not need it anymore
+
             // if astraea is set, that means disable server span (close()) and get spancontext from this bagg item
         }
 
