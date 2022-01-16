@@ -158,7 +158,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-*  SVC: " +  svc);
         System.out.println("*-*  OPNAME: " + opName );
 
-        if (astraeaSpanStatus(svc + ":" + opName)){ 
+        if (!astraeaSpanStatus(svc + ":" + opName)){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             System.out.println("*-* Do not create soan for this");
          
