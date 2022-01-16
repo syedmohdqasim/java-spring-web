@@ -35,6 +35,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import java.io.File;  // Import the File class
+import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.util.Scanner; // Import the Scanner class to read text files
+
 
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
@@ -58,6 +62,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
+
+    private static String astraeaSpans = "/local/astraea-spans";
 
     /**
      * @param tracer
@@ -87,6 +93,28 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         return httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) instanceof SpanContext;
     }
 
+    static boolean astraeaSpanStatus(String spanId){
+        // tsl: we need svc:operation ---> for server spans
+        // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
+        try {
+            File myObj = new File(astraeaSpans);
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+              String data = myReader.nextLine();
+              if (data.equals(spanId)){
+                System.out.println(" *-* Disabling server!! " + spanId);
+                return false;
+              }
+            }
+            myReader.close();
+        }catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            // e.printStackTrace();
+          }
+          System.out.println(" *-* Enabling server!! " + spanId); 
+        return true;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler)
             throws Exception {
@@ -110,7 +138,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         String opName =  handler instanceof HandlerMethod ?
                         ((HandlerMethod) handler).getMethod().getName() : null;
-        System.out.println("*-* Operation name for the current span" +opName);
+        
 
 
         // tsl: delete below later
@@ -125,7 +153,13 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
 
         // tsl: aSTRAEA baggage item to pass parent context into client if serverspan is disabled
-        if (opName.equalsIgnoreCase("getRouteByTripId")){
+        // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
+        String svc = httpServletRequest.getHeader("host").split(":")[0];
+        System.out.println("*-*  SVC: " +  svc);
+        System.out.println("*-*  OPNAME: " + opName );
+
+        if (astraeaSpanStatus(svc + ":" + opName)){ 
+            // opName.equalsIgnoreCase("getRouteByTripId2")
             System.out.println("*-* Do not create soan for this");
          
             // tsl: make the scope inactive -- we do this at client now

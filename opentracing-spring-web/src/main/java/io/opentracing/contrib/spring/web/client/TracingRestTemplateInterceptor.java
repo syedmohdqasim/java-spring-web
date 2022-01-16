@@ -35,6 +35,11 @@ import java.util.Map;
 
 import io.opentracing.contrib.spring.web.interceptor.HttpServletRequestExtractAdapter;
 
+import java.io.File;  // Import the File class
+import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.util.Scanner; // Import the Scanner class to read text files
+
+
 /**
  * OpenTracing Spring RestTemplate integration. This interceptor creates tracing
  * data for all outgoing requests.
@@ -47,6 +52,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private Tracer tracer;
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
+
+    private static String astraeaSpans = "/local/astraea-spans";
+
     // private boolean serverDisabled = false;
 
     public TracingRestTemplateInterceptor() {
@@ -71,6 +79,30 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         this.spanDecorators = new ArrayList<>(spanDecorators);
     }
 
+    static boolean astraeaSpanStatus(String spanId){
+        // tsl: we need svc:operation:url
+        // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
+        try {
+            File myObj = new File(astraeaSpans);
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+              String data = myReader.nextLine();
+              if (data.equals(spanId)){
+                System.out.println(" *-* Disabling!! " + spanId);
+                return false;
+              }
+
+              
+            }
+            myReader.close();
+        }catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            // e.printStackTrace();
+          }
+          System.out.println(" *-* Enabling!! " + spanId); 
+        return true;
+    }
+
 
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
@@ -78,19 +110,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         ClientHttpResponse httpResponse;
         boolean serverDisabled = false;
 
-        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + httpRequest.getMethod());
-
-        MultiValueMap<String, String> rawHeaders22 = httpRequest.getHeaders();
-        final HashMap<String, String> headers22 = new HashMap<String, String>();
-        for (String key : rawHeaders22.keySet()) {
-            headers22.put(key, rawHeaders22.get(key).get(0));
-        }
-        System.out.println("*-*  Headers now at the beginning of client  " + headers22);
-
+        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
+        System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
         Scope serverSpan = tracer.scopeManager().active();
 
+        // tsl: remove below later
         if (serverSpan != null) {
             System.out.println("*-*  ex span " + serverSpan.span());
         } else {
@@ -112,8 +138,19 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             serverDisabled = true;
         }
 
-        boolean ASTRAEA = false;
-        if (ASTRAEA) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+        // Span state ==> <svc:opName:url> 
+        // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
+        String svc = httpRequest.getHeaders().get("host").get(0).split(":")[0];
+        System.out.println("*-*  SVC: " +  svc);
+        String op = httpRequest.getMethod().toString();
+        System.out.println("*-*  OPNAME: " + op );
+
+        // str.lastIndexOf(separator);
+        String url = httpRequest.getURI().toString();
+        String astraeaUrl = url.substring(0, url.lastIndexOf("/"));
+        System.out.println("*-*  URL : " + astraeaUrl);
+        
+        if (!astraeaSpanStatus(svc + ":" + op + ":" + astraeaUrl)) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             System.out.println("*-*  Dsiabled by ASTRAEA");
 
             if (serverSpan != null) {
