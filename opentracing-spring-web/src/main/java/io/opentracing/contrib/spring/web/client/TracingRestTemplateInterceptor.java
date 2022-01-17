@@ -56,7 +56,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
 
-    private static String astraeaSpans = "/local/astraea-spans.txt";
+    private static String astraeaSpans = "/astraea-spans.txt";
 
     // private boolean serverDisabled = false;
 
@@ -107,8 +107,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
         // Populates the array with names of files and directories
         System.out.println(" Listing " + Arrays.toString(f.list()));
-        f = new File("/local");
-        System.out.println(" Listing " + Arrays.toString(f.list()));
+
 
         System.out.println(" *-* Reading " + astraeaSpans);
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {

@@ -67,7 +67,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
-    private static String astraeaSpans = "/local/astraea-spans.txt";
+    private static String astraeaSpans = "/astraea-spans.txt";
 
     /**
      * @param tracer
@@ -120,8 +120,6 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         File f = new File("/");
 
         // Populates the array with names of files and directories
-        System.out.println(" Listing " + Arrays.toString(f.list()));
-        f = new File("/local");
         System.out.println(" Listing " + Arrays.toString(f.list()));
 
         System.out.println(" *-* Reading " + astraeaSpans);
