@@ -2,6 +2,7 @@ package io.opentracing.contrib.spring.web.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +106,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         File f = new File("/");
 
         // Populates the array with names of files and directories
-        System.out.println(" Listing " + f.list());
+        System.out.println(" Listing " + Arrays.toString(f.list()));
+        f = new File("/local");
+        System.out.println(" Listing " + Arrays.toString(f.list()));
 
         System.out.println(" *-* Reading " + astraeaSpans);
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
