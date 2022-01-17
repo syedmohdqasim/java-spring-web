@@ -162,7 +162,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaUrl)) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             System.out.println("*-*  Dsiabled by ASTRAEA");
 
-            if (serverSpan != null) {
+            // if (serverSpan != null) {
+            if (!serverDisabled){
                 System.out.println("*-*  server span is here so  injecting");
                 // tsl: that  works for disabling client span -- paassing the server span context
                 tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS,
