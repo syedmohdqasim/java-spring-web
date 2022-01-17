@@ -107,6 +107,39 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         return true;
     }
 
+    // tsl: check for uppercase and int in the url - if so crop it
+    static boolean urlLastPartCrop(String urlLastPart){
+    
+        for(int i=0;i < urlLastPart.length();i++) {
+            char ch = urlLastPart.charAt(i);
+            
+            if( Character.isDigit(ch)) {
+                return true;
+            }
+            else if (Character.isUpperCase(ch)) {
+                return true;
+            }
+        }
+        return false;
+
+    }
+
+    // tsl: no uppercase, no integer and special condition for order!!
+    static String astraeaURLFormat(String originalUrl){
+        String astraeaURL = originalUrl;
+        // get the last part 
+        String urlLastPart = astraeaURL.substring(astraeaURL.lastIndexOf("/") + 1);
+
+        while (urlLastPartCrop(urlLastPart)){
+            astraeaURL = astraeaURL.substring(0,astraeaURL.lastIndexOf("/"));
+            urlLastPart = astraeaURL.substring(astraeaURL.lastIndexOf("/") + 1);
+        }
+
+        System.out.println("*-*  astraea URL : " + astraeaURL);
+
+        return astraeaURL;
+    }
+
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
@@ -156,10 +189,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
         // str.lastIndexOf(separator);
         String url = httpRequest.getURI().toString();
-        String astraeaUrl = url.substring(0, url.lastIndexOf("/"));
-        System.out.println("*-*  URL : " + astraeaUrl);
+        System.out.println("*-*  URL : " + url);
         
-        if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaUrl)) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+        if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             System.out.println("*-*  Dsiabled by ASTRAEA");
 
             // if (serverSpan != null) {
