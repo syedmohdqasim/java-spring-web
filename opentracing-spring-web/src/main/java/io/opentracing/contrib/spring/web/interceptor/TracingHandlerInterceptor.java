@@ -97,18 +97,37 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         return httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) instanceof SpanContext;
     }
 
-    static boolean astraeaSpanStatus(String spanId){
+    static boolean isLeafFlag(String spanId){
+        if(spanId.endsWith(":1")){
+            return true;
+        }
+        return false;
+
+    }
+
+    // tsl: special condition for leaf spans = endswith ":1" isLeafFlag
+    // so 0 for enabled, 1 for disabled, 2 for disabled leaf yapilabilir
+    static int astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation ---> for server spans
-        // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
+        // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName : isLeafFlag
         System.out.println(" *-* Reading " + astraeaSpans);
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
             String line = br.readLine();
             
             while (line != null) {
                 System.out.println(" *-* Line " + line);
+                if(isLeafFlag(line)){
+                    
+                    line = line.substring(0,line.indexOf(":1"));
+                    System.out.println(" *-* SPECIAL Line NOW" + line);
+                    if (line.equals(spanId)){
+                        return 2;
+                    }
+                }
+                
                 if (line.equals(spanId)){
                     System.out.println(" *-* Disabling!! " + spanId);
-                    return false;
+                    return 1;
                 } 
                 line = br.readLine();
             }
@@ -116,7 +135,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             System.out.println("!! An error occurred. " + e.getMessage());
         }
           System.out.println(" *-* Enabling server!! " + spanId); 
-        return true;
+        return 0;
     }
 
     @Override
@@ -164,17 +183,29 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-*  SVC: " +  serviceName);
         System.out.println("*-*  OPNAME: " + opName );
 
-        if (!astraeaSpanStatus(serviceName + ":" + opName)){ 
+        int astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
+        if ( astraeaSpanStatus != 0){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             System.out.println("*-* Do not create soan for this");
+
+
+            //tsl: check for special condition - is leaf flag 
+            if(astraeaSpanStatus == 2){
+                serverSpan.close();
+                System.out.println("*-* Disabled leaf!!!");
+                
+            }
+            else{
+                // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
+                        
+                serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
+                System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
+
+            }
          
             // tsl: make the scope inactive -- we do this at client now
             // serverSpan.close();
-            // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
-        
-            serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-            System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
-
+          
         }
         else{ // we do nothing as server span is enabled
         //     System.out.println("*-* Creating server span now");
