@@ -136,6 +136,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             
         }
 
+        String tracerService = tracer.toString();
+        String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
+        System.out.println("*-* tracer for svc name at server "  + serviceName);
+
         SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
             new HttpServletRequestExtractAdapter(httpServletRequest));
         System.out.println("*-* Extracted context from parent " + extractedContext);
@@ -156,11 +160,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         // tsl: aSTRAEA baggage item to pass parent context into client if serverspan is disabled
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
-        String svc = httpServletRequest.getHeader("host").split(":")[0];
-        System.out.println("*-*  SVC: " +  svc);
+        // String svc = httpServletRequest.getHeader("host").split(":")[0];
+        System.out.println("*-*  SVC: " +  serviceName);
         System.out.println("*-*  OPNAME: " + opName );
 
-        if (!astraeaSpanStatus(svc + ":" + opName)){ 
+        if (!astraeaSpanStatus(serviceName + ":" + opName)){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             System.out.println("*-* Do not create soan for this");
          

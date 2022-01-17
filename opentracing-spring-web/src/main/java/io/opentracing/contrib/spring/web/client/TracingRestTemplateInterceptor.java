@@ -57,10 +57,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private SpanContext parentSpanContext;
 
     private static String astraeaSpans = "/astraea-spans";
+    private static String serviceName = "";
 
     // private boolean serverDisabled = false;
 
     public TracingRestTemplateInterceptor() {
+        // String tracerService = tracer.toString();
+        // this.serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
         this(GlobalTracer.get(),
                 Collections.<RestTemplateSpanDecorator>singletonList(new RestTemplateSpanDecorator.StandardTags()));
     }
@@ -110,7 +113,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         ClientHttpResponse httpResponse;
         boolean serverDisabled = false;
 
-        System.out.println("*-* tracer for svc name "  + tracer + ", " + GlobalTracer.class.getSimpleName());
+        System.out.println("*-* tracer for svc name "  + tracer);
+        String tracerService = tracer.toString();
+        String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
+        System.out.println("*-* tracer for svc name "  + serviceName);
+
 
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
         System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
@@ -142,8 +149,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
         // Span state ==> <svc:opName:url> 
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
-        String svc = httpRequest.getHeaders().get("host").get(0).split(":")[0];
-        System.out.println("*-*  SVC: " +  svc);
+        // String svc = httpRequest.getHeaders().get("host").get(0).split(":")[0];
+        System.out.println("*-*  SVC: " +  serviceName);
         String op = httpRequest.getMethod().toString();
         System.out.println("*-*  OPNAME: " + op );
 
@@ -152,7 +159,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         String astraeaUrl = url.substring(0, url.lastIndexOf("/"));
         System.out.println("*-*  URL : " + astraeaUrl);
         
-        if (!astraeaSpanStatus(svc + ":" + op + ":" + astraeaUrl)) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+        if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaUrl)) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             System.out.println("*-*  Dsiabled by ASTRAEA");
 
             if (serverSpan != null) {
