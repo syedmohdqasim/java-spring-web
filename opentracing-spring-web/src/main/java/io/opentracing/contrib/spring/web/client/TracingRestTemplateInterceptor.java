@@ -102,6 +102,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         //     e.printStackTrace();
         //   }
 
+        File f = new File("/");
+
+        // Populates the array with names of files and directories
+        System.out.println(" Listing " + f.list());
+
         System.out.println(" *-* Reading " + astraeaSpans);
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
             
