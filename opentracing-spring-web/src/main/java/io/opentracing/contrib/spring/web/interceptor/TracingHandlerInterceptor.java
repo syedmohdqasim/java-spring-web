@@ -100,44 +100,18 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     static boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation ---> for server spans
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
-        // try {
-        //     System.out.println(" *-* Reading " + astraeaSpans);
-        //     File myObj = new File(astraeaSpans);
-        //     System.out.println(" *-* read " + astraeaSpans);
-        //     Scanner myReader = new Scanner(myObj);
-        //     while (myReader.hasNextLine()) {
-        //       String data = myReader.nextLine();
-        //       if (data.equals(spanId)){
-        //         System.out.println(" *-* Disabling server!! " + spanId);
-        //         return false;
-        //       }
-        //     }
-        //     myReader.close();
-        // }catch (FileNotFoundException e) {
-        //     System.out.println("An error occurred.");
-        //     e.printStackTrace();
-        //   }
-        File f = new File("/");
-
-        // Populates the array with names of files and directories
-        System.out.println(" Listing " + Arrays.toString(f.list()));
-
         System.out.println(" *-* Reading " + astraeaSpans);
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
-            
             String line = br.readLine();
-            System.out.println(" *-* Line " + line);
-        
+            
             while (line != null) {
+                System.out.println(" *-* Line " + line);
                 if (line.equals(spanId)){
                     System.out.println(" *-* Disabling!! " + spanId);
                     return false;
-
                 } 
-               
                 line = br.readLine();
             }
-            
         }catch(Exception e){
             System.out.println("!! An error occurred. " + e.getMessage());
         }
@@ -168,8 +142,6 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         String opName =  handler instanceof HandlerMethod ?
                         ((HandlerMethod) handler).getMethod().getName() : null;
-        
-
 
         // tsl: delete below later
         HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
@@ -197,10 +169,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
         
             serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-
             System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
 
-           
         }
         else{ // we do nothing as server span is enabled
         //     System.out.println("*-* Creating server span now");

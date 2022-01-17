@@ -85,46 +85,18 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     static boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
-        // try {
-        //     System.out.println(" *-* Reading " + astraeaSpans);
-        //     File myObj = new File(astraeaSpans);
-        //     System.out.println(" *-* read " + astraeaSpans);
-        //     Scanner myReader = new Scanner(myObj);
-        //     while (myReader.hasNextLine()) {
-        //       String data = myReader.nextLine();
-        //       if (data.equals(spanId)){
-        //         System.out.println(" *-* Disabling!! " + spanId);
-        //         return false;
-        //       }
-        //     }
-        //     myReader.close();
-        // }catch (FileNotFoundException e) {
-        //     System.out.println("An error occurred.");
-        //     e.printStackTrace();
-        //   }
-
-        File f = new File("/");
-
-        // Populates the array with names of files and directories
-        System.out.println(" Listing " + Arrays.toString(f.list()));
-
-
         System.out.println(" *-* Reading " + astraeaSpans);
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
-            
             String line = br.readLine();
-            System.out.println(" *-* Line " + line);
-        
+            
             while (line != null) {
+                System.out.println(" *-* Line " + line);
                 if (line.equals(spanId)){
                     System.out.println(" *-* Disabling!! " + spanId);
                     return false;
-
                 } 
-               
                 line = br.readLine();
             }
-            
         }catch(Exception e){
             System.out.println("!! An error occurred. " + e.getMessage());
         }
@@ -132,12 +104,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         return true;
     }
 
-
     @Override
     public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
         ClientHttpResponse httpResponse;
         boolean serverDisabled = false;
+
+        System.out.println("*-* tracer for svc name "  + tracer + ", " + GlobalTracer.class.getSimpleName());
 
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
         System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
