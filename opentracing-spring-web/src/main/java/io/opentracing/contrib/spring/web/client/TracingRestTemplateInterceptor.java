@@ -24,6 +24,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.opentracing.SpanContext;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,8 +36,9 @@ import java.util.Map;
 
 import io.opentracing.contrib.spring.web.interceptor.HttpServletRequestExtractAdapter;
 
-import java.io.File;  // Import the File class
-import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.io.File; // Import the File class
+import java.io.FileNotFoundException; // Import this class to handle errors
+import java.io.FileReader;
 import java.util.Scanner; // Import the Scanner class to read text files
 
 
@@ -82,23 +84,43 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     static boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
-        try {
-            System.out.println(" *-* Reading " + astraeaSpans);
-            File myObj = new File(astraeaSpans);
-            System.out.println(" *-* read " + astraeaSpans);
-            Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
-              String data = myReader.nextLine();
-              if (data.equals(spanId)){
-                System.out.println(" *-* Disabling!! " + spanId);
-                return false;
-              }
+        // try {
+        //     System.out.println(" *-* Reading " + astraeaSpans);
+        //     File myObj = new File(astraeaSpans);
+        //     System.out.println(" *-* read " + astraeaSpans);
+        //     Scanner myReader = new Scanner(myObj);
+        //     while (myReader.hasNextLine()) {
+        //       String data = myReader.nextLine();
+        //       if (data.equals(spanId)){
+        //         System.out.println(" *-* Disabling!! " + spanId);
+        //         return false;
+        //       }
+        //     }
+        //     myReader.close();
+        // }catch (FileNotFoundException e) {
+        //     System.out.println("An error occurred.");
+        //     e.printStackTrace();
+        //   }
+
+        System.out.println(" *-* Reading " + astraeaSpans);
+        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+            
+            String line = br.readLine();
+            System.out.println(" *-* Line " + line);
+        
+            while (line != null) {
+                if (line.equals(spanId)){
+                    System.out.println(" *-* Disabling!! " + spanId);
+                    return false;
+
+                } 
+               
+                line = br.readLine();
             }
-            myReader.close();
-        }catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-          }
+            
+        }catch(Exception e){
+            System.out.println("!! An error occurred. " + e.getMessage());
+        }
           System.out.println(" *-* Enabling!! " + spanId); 
         return true;
     }

@@ -31,6 +31,10 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.function.Function;
 
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -96,23 +100,43 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     static boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation ---> for server spans
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
-        try {
-            System.out.println(" *-* Reading " + astraeaSpans);
-            File myObj = new File(astraeaSpans);
-            System.out.println(" *-* read " + astraeaSpans);
-            Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
-              String data = myReader.nextLine();
-              if (data.equals(spanId)){
-                System.out.println(" *-* Disabling server!! " + spanId);
-                return false;
-              }
+        // try {
+        //     System.out.println(" *-* Reading " + astraeaSpans);
+        //     File myObj = new File(astraeaSpans);
+        //     System.out.println(" *-* read " + astraeaSpans);
+        //     Scanner myReader = new Scanner(myObj);
+        //     while (myReader.hasNextLine()) {
+        //       String data = myReader.nextLine();
+        //       if (data.equals(spanId)){
+        //         System.out.println(" *-* Disabling server!! " + spanId);
+        //         return false;
+        //       }
+        //     }
+        //     myReader.close();
+        // }catch (FileNotFoundException e) {
+        //     System.out.println("An error occurred.");
+        //     e.printStackTrace();
+        //   }
+
+        System.out.println(" *-* Reading " + astraeaSpans);
+        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+            
+            String line = br.readLine();
+            System.out.println(" *-* Line " + line);
+        
+            while (line != null) {
+                if (line.equals(spanId)){
+                    System.out.println(" *-* Disabling!! " + spanId);
+                    return false;
+
+                } 
+               
+                line = br.readLine();
             }
-            myReader.close();
-        }catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
-            e.printStackTrace();
-          }
+            
+        }catch(Exception e){
+            System.out.println("!! An error occurred. " + e.getMessage());
+        }
           System.out.println(" *-* Enabling server!! " + spanId); 
         return true;
     }
