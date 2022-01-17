@@ -53,7 +53,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
 
-    private static String astraeaSpans = "/local/astraea-spans";
+    private static String astraeaSpans = "/local/astraea-spans.txt";
 
     // private boolean serverDisabled = false;
 
@@ -83,7 +83,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
         try {
+            System.out.println(" *-* Reading " + astraeaSpans);
             File myObj = new File(astraeaSpans);
+            System.out.println(" *-* read " + astraeaSpans);
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
               String data = myReader.nextLine();
@@ -91,13 +93,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 System.out.println(" *-* Disabling!! " + spanId);
                 return false;
               }
-
-              
             }
             myReader.close();
         }catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
-            // e.printStackTrace();
+            e.printStackTrace();
           }
           System.out.println(" *-* Enabling!! " + spanId); 
         return true;

@@ -63,7 +63,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
-    private static String astraeaSpans = "/local/astraea-spans";
+    private static String astraeaSpans = "/local/astraea-spans.txt";
 
     /**
      * @param tracer
@@ -97,7 +97,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // tsl: we need svc:operation ---> for server spans
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
         try {
+            System.out.println(" *-* Reading " + astraeaSpans);
             File myObj = new File(astraeaSpans);
+            System.out.println(" *-* read " + astraeaSpans);
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
               String data = myReader.nextLine();
@@ -109,7 +111,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             myReader.close();
         }catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
-            // e.printStackTrace();
+            e.printStackTrace();
           }
           System.out.println(" *-* Enabling server!! " + spanId); 
         return true;
