@@ -56,7 +56,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
 
-    private static String astraeaSpans = "/astraea-spans.txt";
+    private static String astraeaSpans = "/astraea-spans";
 
     // private boolean serverDisabled = false;
 

@@ -67,7 +67,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
-    private static String astraeaSpans = "/astraea-spans.txt";
+    private static String astraeaSpans = "/astraea-spans";
 
     /**
      * @param tracer
