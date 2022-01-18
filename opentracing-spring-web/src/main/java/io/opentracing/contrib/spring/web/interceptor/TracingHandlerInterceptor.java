@@ -171,7 +171,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private int astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation ---> for server spans
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName : isLeafFlag
-        System.out.println(" *-* Reading " + astraeaSpans);
+        // System.out.println(" *-* Reading " + astraeaSpans);
 
         int result = 0;
 
@@ -185,7 +185,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 result = 2;
             }
         }
-        System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
+        // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
 
         // try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
