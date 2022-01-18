@@ -43,6 +43,10 @@ import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
 import java.util.Scanner; // Import the Scanner class to read text files
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import java.util.HashSet;
 
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
@@ -69,6 +73,32 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private static String astraeaSpans = "/astraea-spans";
 
+    // private String message = null;
+    private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    private final Object lock = new Object();
+
+    private void populateAstraeaSpanStates() {
+        System.out.println("*-* Running: " + new java.util.Date());
+        HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+                String line = br.readLine();
+                while (line != null) {
+                    astraeaSpansSetLocal.add(line);
+                    line = br.readLine();
+                }
+        }catch(Exception e){
+            System.out.println("!! An error occurred. " + e.getMessage());
+        }
+
+        System.out.println("*-* Populating: " + astraeaSpansSetLocal);
+        synchronized (lock) {
+            astraeaSpansSet = astraeaSpansSetLocal;
+        }
+
+        System.out.println("*-* Populated: " + astraeaSpansSet);
+  
+    }
+
     /**
      * @param tracer
      */
@@ -84,6 +114,37 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     public TracingHandlerInterceptor(Tracer tracer, List<HandlerInterceptorSpanDecorator> decorators) {
         this.tracer = tracer;
         this.decorators = new ArrayList<>(decorators);
+
+        System.out.println("*-* This constructor is called! " );
+
+        // ScheduledExecutorService executorService;
+        // executorService = Executors.newSingleThreadScheduledExecutor();
+        // executorService.scheduleAtFixedRate(this.populateAstraeaSpanStates, 0, 2, TimeUnit.SECONDS);
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("*-* Running: " + new java.util.Date());
+                HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+                        String line = br.readLine();
+                        while (line != null) {
+                            astraeaSpansSetLocal.add(line);
+                            line = br.readLine();
+                        }
+                }catch(Exception e){
+                    System.out.println("!! An error occurred in timer task. " + e.getMessage());
+                }
+        
+                System.out.println("*-* Populating: " + astraeaSpansSetLocal);
+                synchronized (lock) {
+                    astraeaSpansSet = astraeaSpansSetLocal;
+                }
+        
+                System.out.println("*-* Populated: " + astraeaSpansSet);
+            }
+        }, 0, 1000);
     }
 
     /**
@@ -107,35 +168,50 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     // tsl: special condition for leaf spans = endswith ":1" isLeafFlag
     // so 0 for enabled, 1 for disabled, 2 for disabled leaf yapilabilir
-    static int astraeaSpanStatus(String spanId){
+    private int astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation ---> for server spans
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName : isLeafFlag
         System.out.println(" *-* Reading " + astraeaSpans);
-        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
-            String line = br.readLine();
-            
-            while (line != null) {
-                System.out.println(" *-* Line " + line);
-                if(isLeafFlag(line)){
-                    
-                    line = line.substring(0,line.indexOf(":1"));
-                    System.out.println(" *-* SPECIAL Line NOW" + line);
-                    if (line.equals(spanId)){
-                        return 2;
-                    }
-                }
-                
-                if (line.equals(spanId)){
-                    System.out.println(" *-* Disabling!! " + spanId);
-                    return 1;
-                } 
-                line = br.readLine();
+
+        int result = 0;
+
+        synchronized (lock) {
+            if (astraeaSpansSet.contains(spanId)){
+                result = 1;
+
             }
-        }catch(Exception e){
-            System.out.println("!! An error occurred. " + e.getMessage());
+            // if server span is leaf -- endsWith = ":1"
+            else if (astraeaSpansSet.contains(spanId + ":1")){
+                result = 2;
+            }
         }
-          System.out.println(" *-* Enabling server!! " + spanId); 
-        return 0;
+        System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
+        return result;       
+
+        // try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+        //     String line = br.readLine();
+            
+        //     while (line != null) {
+        //         System.out.println(" *-* Line " + line);
+        //         if(isLeafFlag(line)){
+                    
+        //             line = line.substring(0,line.indexOf(":1"));
+        //             System.out.println(" *-* SPECIAL Line NOW" + line);
+        //             if (line.equals(spanId)){
+        //                 return 2;
+        //             }
+        //         }
+                
+        //         if (line.equals(spanId)){
+        //             System.out.println(" *-* Disabling!! " + spanId);
+        //             return 1;
+        //         } 
+        //         line = br.readLine();
+        //     }
+        // }catch(Exception e){
+        //     System.out.println("!! An error occurred. " + e.getMessage());
+        // }
+
     }
 
     @Override
