@@ -259,7 +259,13 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-*  SVC: " +  serviceName);
         System.out.println("*-*  OPNAME: " + opName );
 
+        long startTime = System.nanoTime();
         int astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
+        long endTime = System.nanoTime();
+
+        System.out.println("*-* Astraea overhead: " + (endTime - startTime));
+
+
         if ( astraeaSpanStatus != 0){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             System.out.println("*-* Do not create soan for this");
