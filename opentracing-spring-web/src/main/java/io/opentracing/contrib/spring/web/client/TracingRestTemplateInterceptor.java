@@ -134,7 +134,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // return result;   
 
         System.out.println(" *-* Enabling deiocion for client span!! " + spanId + " == " + result); 
-        return true;
+        return result;
 
         // try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
         //     String line = br.readLine();
