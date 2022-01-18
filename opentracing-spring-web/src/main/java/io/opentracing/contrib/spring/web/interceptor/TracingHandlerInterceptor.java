@@ -144,7 +144,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         
                 System.out.println("*-* Populated: " + astraeaSpansSet);
             }
-        }, 0, 1000);
+        }, 0, 10000);
     }
 
     /**

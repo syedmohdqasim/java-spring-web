@@ -42,6 +42,9 @@ import java.io.FileNotFoundException; // Import this class to handle errors
 import java.io.FileReader;
 import java.util.Scanner; // Import the Scanner class to read text files
 
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.HashSet;
 
 /**
  * OpenTracing Spring RestTemplate integration. This interceptor creates tracing
@@ -58,6 +61,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     private static String astraeaSpans = "/astraea-spans";
     private static String serviceName = "";
+
+    private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    private final Object lock = new Object();
 
     // private boolean serverDisabled = false;
 
@@ -83,28 +89,68 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     public TracingRestTemplateInterceptor(Tracer tracer, List<RestTemplateSpanDecorator> spanDecorators) {
         this.tracer = tracer;
         this.spanDecorators = new ArrayList<>(spanDecorators);
+
+        System.out.println("*-* This rest template constructor is called! " );
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("*-* Running rest: " + new java.util.Date());
+                HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+                        String line = br.readLine();
+                        while (line != null) {
+                            astraeaSpansSetLocal.add(line);
+                            line = br.readLine();
+                        }
+                }catch(Exception e){
+                    System.out.println("!! An error occurred in timer task for rest. " + e.getMessage());
+                }
+        
+                System.out.println("*-* Populating rest: " + astraeaSpansSetLocal);
+                synchronized (lock) {
+                    astraeaSpansSet = astraeaSpansSetLocal;
+                }
+        
+                System.out.println("*-* Populated rest: " + astraeaSpansSet);
+            }
+        }, 0, 10000);
+
     }
 
-    static boolean astraeaSpanStatus(String spanId){
+    boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
         System.out.println(" *-* Reading " + astraeaSpans);
-        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
-            String line = br.readLine();
-            
-            while (line != null) {
-                System.out.println(" *-* Line " + line);
-                if (line.equals(spanId)){
-                    System.out.println(" *-* Disabling!! " + spanId);
-                    return false;
-                } 
-                line = br.readLine();
+        boolean result = true;
+        synchronized (lock) {
+            if (astraeaSpansSet.contains(spanId)){
+                result = false;
+
             }
-        }catch(Exception e){
-            System.out.println("!! An error occurred. " + e.getMessage());
         }
-          System.out.println(" *-* Enabling!! " + spanId); 
+        // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
+        // return result;   
+
+        System.out.println(" *-* Enabling deiocion for client span!! " + spanId + " == " + result); 
         return true;
+
+        // try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+        //     String line = br.readLine();
+            
+        //     while (line != null) {
+        //         System.out.println(" *-* Line " + line);
+        //         if (line.equals(spanId)){
+        //             System.out.println(" *-* Disabling!! " + spanId);
+        //             return false;
+        //         } 
+        //         line = br.readLine();
+        //     }
+        // }catch(Exception e){
+        //     System.out.println("!! An error occurred. " + e.getMessage());
+        // }
+        
     }
 
     // tsl: check for uppercase and int in the url - if so crop it
