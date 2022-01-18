@@ -166,19 +166,45 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     }
 
+    private int astraeaSpanStatusFS(String spanId){
+        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+            String line = br.readLine();
+            
+            while (line != null) {
+                // System.out.println(" *-* Line " + line);
+                if(isLeafFlag(line)){
+                    
+                    line = line.substring(0,line.indexOf(":1"));
+                    // System.out.println(" *-* SPECIAL Line NOW" + line);
+                    if (line.equals(spanId)){
+                        return 2;
+                    }
+                }
+                
+                if (line.equals(spanId)){
+                    // System.out.println(" *-* Disabling!! " + spanId);
+                    return 1;
+                } 
+                line = br.readLine();
+            }
+        }catch(Exception e){
+            System.out.println("!! An error occurred. " + e.getMessage());
+        }
+
+        return 0;
+    }
+
     // tsl: special condition for leaf spans = endswith ":1" isLeafFlag
     // so 0 for enabled, 1 for disabled, 2 for disabled leaf yapilabilir
     private int astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation ---> for server spans
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName : isLeafFlag
+       
         // System.out.println(" *-* Reading " + astraeaSpans);
-
         int result = 0;
-
         synchronized (lock) {
             if (astraeaSpansSet.contains(spanId)){
                 result = 1;
-
             }
             // if server span is leaf -- endsWith = ":1"
             else if (astraeaSpansSet.contains(spanId + ":1")){
@@ -187,31 +213,6 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         }
         // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
-
-        // try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
-        //     String line = br.readLine();
-            
-        //     while (line != null) {
-        //         System.out.println(" *-* Line " + line);
-        //         if(isLeafFlag(line)){
-                    
-        //             line = line.substring(0,line.indexOf(":1"));
-        //             System.out.println(" *-* SPECIAL Line NOW" + line);
-        //             if (line.equals(spanId)){
-        //                 return 2;
-        //             }
-        //         }
-                
-        //         if (line.equals(spanId)){
-        //             System.out.println(" *-* Disabling!! " + spanId);
-        //             return 1;
-        //         } 
-        //         line = br.readLine();
-        //     }
-        // }catch(Exception e){
-        //     System.out.println("!! An error occurred. " + e.getMessage());
-        // }
-
     }
 
     @Override
@@ -260,7 +261,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-*  OPNAME: " + opName );
 
         long startTime = System.nanoTime();
-        int astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
+        int astraeaSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
         long endTime = System.nanoTime();
 
         System.out.println("*-* Astraea overhead: " + (endTime - startTime));
