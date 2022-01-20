@@ -195,21 +195,21 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-* tracer for svc name "  + tracer);
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
-        // System.out.println("*-* tracer for svc name "  + serviceName);
+        System.out.println("*-* tracer for svc name "  + serviceName);
 
 
-        // System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
-        // System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
+        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
+        System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
         Scope serverSpan = tracer.scopeManager().active();
 
         // tsl: remove below later
-        // if (serverSpan != null) {
-        //     // System.out.println("*-*  ex span " + serverSpan.span());
-        // } else {
-        //     // System.out.println("*-*  server ex span is null ");
-        // }
+        if (serverSpan != null) {
+            // System.out.println("*-*  ex span " + serverSpan.span());
+        } else {
+            // System.out.println("*-*  server ex span is null ");
+        }
 
         if (serverSpan.span().getBaggageItem("astraea") != null){
             // System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));

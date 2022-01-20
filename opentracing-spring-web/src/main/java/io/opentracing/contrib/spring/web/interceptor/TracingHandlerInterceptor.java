@@ -226,7 +226,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
          //tsl: now the active should be parent so that we can set the span context properly according to enable/disable
         Scope serverSpan = tracer.scopeManager().active();
         
-        // System.out.println("*-* gelmistik tracing handler");
+        System.out.println("*-* gelmistik tracing handler");
         // if (serverSpan != null){
         //     System.out.println("*-* Server information at handler: " +  serverSpan.span());
             
@@ -234,11 +234,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
-        // System.out.println("*-* tracer for svc name at server "  + serviceName);
+        System.out.println("*-* tracer for svc name at server "  + serviceName);
 
         SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
             new HttpServletRequestExtractAdapter(httpServletRequest));
-        // System.out.println("*-* Extracted context from parent " + extractedContext);
+        System.out.println("*-* Extracted context from parent " + extractedContext);
 
         String opName =  handler instanceof HandlerMethod ?
                         ((HandlerMethod) handler).getMethod().getName() : null;
@@ -256,9 +256,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         // tsl: aSTRAEA baggage item to pass parent context into client if serverspan is disabled
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
-        // String svc = httpServletRequest.getHeader("host").split(":")[0];
-        // System.out.println("*-*  SVC: " +  serviceName);
-        // System.out.println("*-*  OPNAME: " + opName );
+        String svc = httpServletRequest.getHeader("host").split(":")[0];
+        System.out.println("*-*  SVC: " +  serviceName);
+        System.out.println("*-*  OPNAME: " + opName );
 
         // long startTime = System.nanoTime();
         int astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
@@ -275,14 +275,14 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             //tsl: check for special condition - is leaf flag 
             if(astraeaSpanStatus == 2){
                 serverSpan.close();
-                // System.out.println("*-* Disabled leaf!!!");
+                System.out.println("*-* Disabled leaf!!!");
                 
             }
             else{
                 // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
                         
                 serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-                // System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
+                System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
 
             }
          
