@@ -104,7 +104,7 @@ public interface HandlerInterceptorSpanDecorator {
         public void onPreHandle(HttpServletRequest httpServletRequest, Object handler, Span span) {
             String metaData = HandlerUtils.methodName(handler);
             if (metaData != null) {
-                System.out.println("Setting operation name for span " + span);
+                // System.out.println("Setting operation name for span " + span);
                 span.setOperationName(metaData);
             }
         }

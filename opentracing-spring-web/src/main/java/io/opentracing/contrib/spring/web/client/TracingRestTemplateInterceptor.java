@@ -90,13 +90,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         this.tracer = tracer;
         this.spanDecorators = new ArrayList<>(spanDecorators);
 
-        System.out.println("*-* This rest template constructor is called! " );
+        // System.out.println("*-* This rest template constructor is called! " );
 
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("*-* Running rest: " + new java.util.Date());
+                // System.out.println("*-* Running rest: " + new java.util.Date());
                 HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
@@ -108,12 +108,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                     System.out.println("!! An error occurred in timer task for rest. " + e.getMessage());
                 }
         
-                System.out.println("*-* Populating rest: " + astraeaSpansSetLocal);
+                // System.out.println("*-* Populating rest: " + astraeaSpansSetLocal);
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
         
-                System.out.println("*-* Populated rest: " + astraeaSpansSet);
+                // System.out.println("*-* Populated rest: " + astraeaSpansSet);
             }
         }, 0, 10000);
 
@@ -122,7 +122,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
-        System.out.println(" *-* Reading " + astraeaSpans);
+        // System.out.println(" *-* Reading " + astraeaSpans);
         boolean result = true;
         synchronized (lock) {
             if (astraeaSpansSet.contains(spanId)){
@@ -133,7 +133,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         // return result;   
 
-        System.out.println(" *-* Enabling deiocion for client span!! " + spanId + " == " + result); 
+        // System.out.println(" *-* Enabling deiocion for client span!! " + spanId + " == " + result); 
         return result;
 
         // try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
@@ -181,7 +181,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             urlLastPart = astraeaURL.substring(astraeaURL.lastIndexOf("/") + 1);
         }
 
-        System.out.println("*-*  astraea URL : " + astraeaURL);
+        // System.out.println("*-*  astraea URL : " + astraeaURL);
 
         return astraeaURL;
     }
@@ -192,27 +192,27 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         ClientHttpResponse httpResponse;
         boolean serverDisabled = false;
 
-        System.out.println("*-* tracer for svc name "  + tracer);
+        // System.out.println("*-* tracer for svc name "  + tracer);
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
-        System.out.println("*-* tracer for svc name "  + serviceName);
+        // System.out.println("*-* tracer for svc name "  + serviceName);
 
 
-        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
-        System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
+        // System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
+        // System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
         Scope serverSpan = tracer.scopeManager().active();
 
         // tsl: remove below later
-        if (serverSpan != null) {
-            System.out.println("*-*  ex span " + serverSpan.span());
-        } else {
-            System.out.println("*-*  server ex span is null ");
-        }
+        // if (serverSpan != null) {
+        //     // System.out.println("*-*  ex span " + serverSpan.span());
+        // } else {
+        //     // System.out.println("*-*  server ex span is null ");
+        // }
 
         if (serverSpan.span().getBaggageItem("astraea") != null){
-            System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
+            // System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
 
             String contextInBag = serverSpan.span().getBaggageItem("astraea");            
             final HashMap<String, String> headers = new HashMap<String, String>();
@@ -220,7 +220,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headers));
 
-            System.out.println("*-*  Cokemelli2 " + parentSpanContext);
+            // System.out.println("*-*  Cokemelli2 " + parentSpanContext);
 
             serverSpan.close();
             serverDisabled = true;
@@ -229,25 +229,25 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // Span state ==> <svc:opName:url> 
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
         // String svc = httpRequest.getHeaders().get("host").get(0).split(":")[0];
-        System.out.println("*-*  SVC: " +  serviceName);
+        // System.out.println("*-*  SVC: " +  serviceName);
         String op = httpRequest.getMethod().toString();
-        System.out.println("*-*  OPNAME: " + op );
+        // System.out.println("*-*  OPNAME: " + op );
 
         // str.lastIndexOf(separator);
         String url = httpRequest.getURI().toString();
-        System.out.println("*-*  URL : " + url);
+        // System.out.println("*-*  URL : " + url);
         
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
-            System.out.println("*-*  Dsiabled by ASTRAEA");
+            // System.out.println("*-*  Dsiabled by ASTRAEA");
 
             // if (serverSpan != null) {
             if (!serverDisabled){
-                System.out.println("*-*  server span is here so  injecting");
+                // System.out.println("*-*  server span is here so  injecting");
                 // tsl: that  works for disabling client span -- paassing the server span context
                 tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             } else {
-                System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
+                // System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
                 tracer.inject(parentSpanContext, Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             }
@@ -260,11 +260,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             }
           
         } else {
-            System.out.println("*-*  Client Enabled by ASTRAEA");
+            // System.out.println("*-*  Client Enabled by ASTRAEA");
             SpanContext parentSpan;
 
             if (serverDisabled) { // if server span is disabled get the span context from baggage i.e., astraea -> parentSpanContext
-                System.out.println("*-*  Server span is disablled so getting span context from bagg");
+                // System.out.println("*-*  Server span is disablled so getting span context from bagg");
 
                 // create span with parent
                 try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())

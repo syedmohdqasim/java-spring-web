@@ -78,7 +78,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private final Object lock = new Object();
 
     private void populateAstraeaSpanStates() {
-        System.out.println("*-* Running: " + new java.util.Date());
+        // System.out.println("*-* Running: " + new java.util.Date());
         HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
         try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                 String line = br.readLine();
@@ -90,12 +90,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             System.out.println("!! An error occurred. " + e.getMessage());
         }
 
-        System.out.println("*-* Populating: " + astraeaSpansSetLocal);
+        // System.out.println("*-* Populating: " + astraeaSpansSetLocal);
         synchronized (lock) {
             astraeaSpansSet = astraeaSpansSetLocal;
         }
 
-        System.out.println("*-* Populated: " + astraeaSpansSet);
+        // System.out.println("*-* Populated: " + astraeaSpansSet);
   
     }
 
@@ -115,7 +115,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         this.tracer = tracer;
         this.decorators = new ArrayList<>(decorators);
 
-        System.out.println("*-* This constructor is called! " );
+        // System.out.println("*-* This constructor is called! " );
 
         // ScheduledExecutorService executorService;
         // executorService = Executors.newSingleThreadScheduledExecutor();
@@ -125,7 +125,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                System.out.println("*-* Running: " + new java.util.Date());
+                // System.out.println("*-* Running: " + new java.util.Date());
                 HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
@@ -137,12 +137,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     System.out.println("!! An error occurred in timer task. " + e.getMessage());
                 }
         
-                System.out.println("*-* Populating: " + astraeaSpansSetLocal);
+                // System.out.println("*-* Populating: " + astraeaSpansSetLocal);
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
         
-                System.out.println("*-* Populated: " + astraeaSpansSet);
+                // System.out.println("*-* Populated: " + astraeaSpansSet);
             }
         }, 0, 10000);
     }
@@ -226,63 +226,63 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
          //tsl: now the active should be parent so that we can set the span context properly according to enable/disable
         Scope serverSpan = tracer.scopeManager().active();
         
-        System.out.println("*-* gelmistik tracing handler");
-        if (serverSpan != null){
-            System.out.println("*-* Server information at handler: " +  serverSpan.span());
+        // System.out.println("*-* gelmistik tracing handler");
+        // if (serverSpan != null){
+        //     System.out.println("*-* Server information at handler: " +  serverSpan.span());
             
-        }
+        // }
 
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
-        System.out.println("*-* tracer for svc name at server "  + serviceName);
+        // System.out.println("*-* tracer for svc name at server "  + serviceName);
 
         SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
             new HttpServletRequestExtractAdapter(httpServletRequest));
-        System.out.println("*-* Extracted context from parent " + extractedContext);
+        // System.out.println("*-* Extracted context from parent " + extractedContext);
 
         String opName =  handler instanceof HandlerMethod ?
                         ((HandlerMethod) handler).getMethod().getName() : null;
 
         // tsl: delete below later
-        HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
-        .stream()
-        .collect(Collectors.toMap(
-            Function.identity(),
-            h -> Collections.list(httpServletRequest.getHeaders(h)),
-            (oldValue, newValue) -> newValue,
-            HttpHeaders::new
-        ));
-        System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
+        // HttpHeaders httpHeaders = Collections.list(httpServletRequest.getHeaderNames())
+        // .stream()
+        // .collect(Collectors.toMap(
+        //     Function.identity(),
+        //     h -> Collections.list(httpServletRequest.getHeaders(h)),
+        //     (oldValue, newValue) -> newValue,
+        //     HttpHeaders::new
+        // ));
+        // System.out.println("*-* Extracted headers at the beginning " + httpHeaders);
 
         // tsl: aSTRAEA baggage item to pass parent context into client if serverspan is disabled
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
         // String svc = httpServletRequest.getHeader("host").split(":")[0];
-        System.out.println("*-*  SVC: " +  serviceName);
-        System.out.println("*-*  OPNAME: " + opName );
+        // System.out.println("*-*  SVC: " +  serviceName);
+        // System.out.println("*-*  OPNAME: " + opName );
 
-        long startTime = System.nanoTime();
+        // long startTime = System.nanoTime();
         int astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
-        long endTime = System.nanoTime();
+        // long endTime = System.nanoTime();
 
-        System.out.println("*-* Astraea overhead: " + (endTime - startTime));
+        // System.out.println("*-* Astraea overhead: " + (endTime - startTime));
 
 
         if ( astraeaSpanStatus != 0){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
-            System.out.println("*-* Do not create soan for this");
+            // System.out.println("*-* Do not create soan for this");
 
 
             //tsl: check for special condition - is leaf flag 
             if(astraeaSpanStatus == 2){
                 serverSpan.close();
-                System.out.println("*-* Disabled leaf!!!");
+                // System.out.println("*-* Disabled leaf!!!");
                 
             }
             else{
                 // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
                         
                 serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-                System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
+                // System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
 
             }
          
@@ -351,7 +351,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler)
             throws Exception {
 
-                System.out.println("*-* 111");
+                // System.out.println("*-* 111");
 
         if (!isTraced(httpServletRequest)) {
             return;
@@ -377,14 +377,14 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         for (HandlerInterceptorSpanDecorator decorator : decorators) {
             decorator.onAfterConcurrentHandlingStarted(httpServletRequest, httpServletResponse, handler, span);
         }
-        System.out.println("*-* 222");
+        // System.out.println("*-* 222");
     }
 
     @Override
     public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                                 Object handler, Exception ex) throws Exception {
 
-        System.out.println("*-* 333");
+        // System.out.println("*-* 333");
         if (!isTraced(httpServletRequest)) {
             return;
         }
@@ -392,7 +392,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         Deque<Scope> scopeStack = getScopeStack(httpServletRequest);
         if(scopeStack.size() > 0) {
             Scope scope = scopeStack.pop();
-            System.out.println("*-* after completion for scope " + scope != null ? "null": scope.span());
+            // System.out.println("*-* after completion for scope " + scope != null ? "null": scope.span());
             onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, scope.span());
             scope.close();
         } else {
@@ -402,7 +402,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private void onAfterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
                                    Object handler, Exception ex, Span span) {
-                                    System.out.println("*-* 444");
+                                    // System.out.println("*-* 444");
         for (HandlerInterceptorSpanDecorator decorator : decorators) {
             decorator.onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, span);
         }
