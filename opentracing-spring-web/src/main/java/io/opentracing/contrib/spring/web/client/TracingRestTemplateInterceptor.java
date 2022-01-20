@@ -208,10 +208,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             headersClient.put(key, rawHeaders.get(key).get(0));
         }
 
-        SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
+        SpanContext parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headersClient));
 
-        System.out.println("*-* parent here: " + parentSpanNow  );
+        System.out.println("*-* parent here: " + parentSpanContext  );
 
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
         Scope serverSpan = tracer.scopeManager().active();
@@ -221,22 +221,23 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             System.out.println("*-*  ex span " + serverSpan.span());
         } else {
             System.out.println("*-*  server ex span is null ");
-        }
-
-        if (serverSpan.span().getBaggageItem("astraea") != null){
-            // System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
-
-            String contextInBag = serverSpan.span().getBaggageItem("astraea");            
-            final HashMap<String, String> headers = new HashMap<String, String>();
-            headers.put("uber-trace-id", contextInBag);
-            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                            new TextMapExtractAdapter(headers));
-
-            // System.out.println("*-*  Cokemelli2 " + parentSpanContext);
-
-            serverSpan.close();
             serverDisabled = true;
         }
+
+        // if (serverSpan.span().getBaggageItem("astraea") != null){
+        //     // System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
+
+        //     String contextInBag = serverSpan.span().getBaggageItem("astraea");            
+        //     final HashMap<String, String> headers = new HashMap<String, String>();
+        //     headers.put("uber-trace-id", contextInBag);
+        //     parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+        //                     new TextMapExtractAdapter(headers));
+
+        //     // System.out.println("*-*  Cokemelli2 " + parentSpanContext);
+
+        //     serverSpan.close();
+        //     serverDisabled = true;
+        // }
 
         // Span state ==> <svc:opName:url> 
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
@@ -273,7 +274,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
           
         } else {
             // System.out.println("*-*  Client Enabled by ASTRAEA");
-            SpanContext parentSpan;
+            // SpanContext parentSpan;
 
             if (serverDisabled) { // if server span is disabled get the span context from baggage i.e., astraea -> parentSpanContext
                 // System.out.println("*-*  Server span is disablled so getting span context from bagg");

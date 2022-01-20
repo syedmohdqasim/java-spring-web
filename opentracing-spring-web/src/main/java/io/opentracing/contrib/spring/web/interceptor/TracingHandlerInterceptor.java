@@ -269,22 +269,23 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         if ( astraeaSpanStatus != 0){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
-            // System.out.println("*-* Do not create soan for this");
+            System.out.println("*-* Do not create soan for this");
+            serverSpan.close();
 
 
             //tsl: check for special condition - is leaf flag 
-            if(astraeaSpanStatus == 2){
-                serverSpan.close();
-                System.out.println("*-* Disabled leaf!!!");
+            // if(astraeaSpanStatus == 2){
+            //     serverSpan.close();
+            //     System.out.println("*-* Disabled leaf!!!");
                 
-            }
-            else{
-                // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
+            // }
+            // else{
+            //     // pass parent span context here as baggage - then in client get this context , close serrverspan, create span with parent context
                         
-                serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-                System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
+            //     serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
+            //     System.out.println("*-* Added context  " + extractedContext.toString() + " check it in bagg : "+ serverSpan.span().getBaggageItem("astraea"));
 
-            }
+            // }
          
             // tsl: make the scope inactive -- we do this at client now
             // serverSpan.close();
