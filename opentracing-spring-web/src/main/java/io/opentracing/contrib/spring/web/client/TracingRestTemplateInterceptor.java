@@ -201,14 +201,26 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
         System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
+
+        MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
+        final HashMap<String, String> headersClient = new HashMap<String, String>();
+        for (String key : rawHeaders.keySet()) {
+            headersClient.put(key, rawHeaders.get(key).get(0));
+        }
+
+        SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                            new TextMapExtractAdapter(headersClient));
+
+        System.out.println("*-* parent here: " + parentSpanNow  );
+
         // toslali: get last active span (ASTRAEA may have disabled some in the middle)
         Scope serverSpan = tracer.scopeManager().active();
 
         // tsl: remove below later
         if (serverSpan != null) {
-            // System.out.println("*-*  ex span " + serverSpan.span());
+            System.out.println("*-*  ex span " + serverSpan.span());
         } else {
-            // System.out.println("*-*  server ex span is null ");
+            System.out.println("*-*  server ex span is null ");
         }
 
         if (serverSpan.span().getBaggageItem("astraea") != null){
