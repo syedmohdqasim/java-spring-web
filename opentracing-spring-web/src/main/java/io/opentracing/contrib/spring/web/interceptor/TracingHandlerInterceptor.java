@@ -326,9 +326,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             // System.out.println("*-* after completion for scope " + scope != null ? "null": scope.span());
             onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, scope.span());
             scope.close();
-        } else {
-            onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, tracer.activeSpan());
+        } else if (tracer.activeSpan() != null){
+                onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, tracer.activeSpan());
+            
         }
+        // otherwise astraea disabled so do nothing!      
     }
 
     private void onAfterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
