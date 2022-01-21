@@ -171,9 +171,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
         
-        System.out.println("*-* tracer for svc name "  + serviceName);
-        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
-        System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
+        // System.out.println("*-* tracer for svc name "  + serviceName);
+        // System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
+        // System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
         // now client span has a parent server span -  below we get parentspan of server span (i.e., grandparent)
         MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
@@ -184,16 +184,16 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         SpanContext parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headersClient));
 
-        System.out.println("*-* grand parent here: " + parentSpanContext  );
+        // System.out.println("*-* grand parent here: " + parentSpanContext  );
 
         // toslali: get server span here - if null then it is disabled by astraea already
         Scope serverSpan = tracer.scopeManager().active();
 
         // tsl: remove below later
         if (serverSpan != null) {
-            System.out.println("*-*  ex span " + serverSpan.span());
+            // System.out.println("*-*  ex span " + serverSpan.span());
         } else {
-            System.out.println("*-*  server ex span is null ");
+            // System.out.println("*-*  server ex span is null ");
             serverDisabled = true;
         }
 
