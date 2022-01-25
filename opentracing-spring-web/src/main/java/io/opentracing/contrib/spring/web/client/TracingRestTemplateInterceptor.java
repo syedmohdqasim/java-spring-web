@@ -204,6 +204,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 try{
                     Thread.sleep(newdelay);
                     System.out.println("*-* Uyandim client");
+                }
                 catch(InterruptedException e){
                     System.out.println("*-* Thread uyuma problemi! client");
                 }
