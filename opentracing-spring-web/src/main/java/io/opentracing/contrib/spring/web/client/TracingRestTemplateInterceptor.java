@@ -46,6 +46,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.HashSet;
 
+import java.util.Random;
+
 /**
  * OpenTracing Spring RestTemplate integration. This interceptor creates tracing
  * data for all outgoing requests.
@@ -60,10 +62,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private SpanContext parentSpanContext;
 
     private static String astraeaSpans = "/astraea-spans";
+
     private static String serviceName = "";
 
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    private HashSet<String> astraeaSpansProblemsSet = new HashSet<>(); 
     // private final Object lock = new Object();
 
     // private boolean serverDisabled = false;
@@ -98,6 +100,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             public void run() {
                 // System.out.println("*-* Running rest: " + new java.util.Date());
                 HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
                         while (line != null) {
@@ -107,10 +110,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }catch(Exception e){
                     System.out.println("!! An error occurred in timer task for rest. " + e.getMessage());
                 }
+
                 // synchronized (lock) {
-                //     astraeaSpansSet = astraeaSpansSetLocal;
+                    astraeaSpansSet = astraeaSpansSetLocal;
                 // }
-                astraeaSpansSet = astraeaSpansSetLocal;
                 // System.out.println("*-* Populated rest: " + astraeaSpansSet);
             }
         }, 0, 10000);
@@ -185,10 +188,22 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     }
 
     private void astraeaDelayInjected(String spanId){
-        if (astraeaSpansProblemsSet.contains(spanId)){
+        if (astraeaSpansSet.contains("inject-" + spanId)){
             // sleep here
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
+            int std = 5;
+            int delay = 25; // milisecond
+
+            Random randomno = new Random();
+            double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
+            System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
+
+            int newdelay = (int)sample;
+            if(newdelay > 0){
+                Thread.sleep(newdelay);
+                System.out.println("*-* Uyandim");
+            }
         }
     }
 
@@ -237,8 +252,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // str.lastIndexOf(separator);
         String url = httpRequest.getURI().toString();
         // System.out.println("*-*  URL : " + url);
+
+        //tsl: inject delay
+        // astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
         
-        if (!astraeaSpanStatusFS(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+        if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             // System.out.println("*-*  Dsiabled by ASTRAEA");
 
             // if (serverSpan != null) {

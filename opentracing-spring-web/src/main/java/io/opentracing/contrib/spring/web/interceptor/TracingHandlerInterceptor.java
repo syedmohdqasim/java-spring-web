@@ -76,7 +76,6 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     // private String message = null;
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    private HashSet<String> astraeaSpansProblemsSet = new HashSet<>(); 
     // private final Object lock = new Object();
 
     /**
@@ -165,11 +164,24 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     }
 
 
-    private void astraeaDelayInjected(String spanId){
-        if (astraeaSpansProblemsSet.contains(spanId)){
-            // sleep here
-            System.out.println(" *-* Sleep enabled for  server span!! " + spanId );
 
+    private void astraeaDelayInjected(String spanId){
+        if (astraeaSpansSet.contains("inject-" + spanId)){
+            // sleep here
+            System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
+
+            int std = 5;
+            int delay = 25; // milisecond
+
+            Random randomno = new Random();
+            double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
+            System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
+
+            int newdelay = (int)sample;
+            if(newdelay > 0){
+                Thread.sleep(newdelay);
+                System.out.println("*-* Uyandim");
+            }
         }
     }
 
@@ -219,7 +231,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // System.out.println("*-*  OPNAME: " + opName );
 
         // long startTime = System.nanoTime();
-        boolean astraeaSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
+        boolean astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
         // long endTime = System.nanoTime();
 
         // System.out.println("*-* Astraea overhead: " + (endTime - startTime));
