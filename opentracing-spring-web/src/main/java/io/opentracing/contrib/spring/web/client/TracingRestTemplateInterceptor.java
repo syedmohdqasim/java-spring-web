@@ -197,12 +197,16 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
             Random randomno = new Random();
             double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
-            System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
+            System.out.println("*-* Gaussian triggered for client span "+ spanId + " with " + String.valueOf(sample));
 
             int newdelay = (int)sample;
             if(newdelay > 0){
-                Thread.sleep(newdelay);
-                System.out.println("*-* Uyandim");
+                try{
+                    Thread.sleep(newdelay);
+                    System.out.println("*-* Uyandim client");
+                catch(InterruptedException e){
+                    System.out.println("*-* Thread uyuma problemi! client");
+                }
             }
         }
     }

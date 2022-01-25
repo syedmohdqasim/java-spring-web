@@ -179,10 +179,16 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
 
             int newdelay = (int)sample;
+            
             if(newdelay > 0){
-                Thread.sleep(newdelay);
-                System.out.println("*-* Uyandim");
+                try{
+                    Thread.sleep(newdelay);
+                    System.out.println("*-* Uyandim");
+                catch(InterruptedException e){
+                    System.out.println("*-* Thread uyuma problemi!");
+                }
             }
+            
         }
     }
 
