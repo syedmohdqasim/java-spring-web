@@ -228,7 +228,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         String url = httpRequest.getURI().toString();
         // System.out.println("*-*  URL : " + url);
         
-        if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
+        if (!astraeaSpanStatusFS(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             // System.out.println("*-*  Dsiabled by ASTRAEA");
 
             // if (serverSpan != null) {

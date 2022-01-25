@@ -211,7 +211,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // System.out.println("*-*  OPNAME: " + opName );
 
         // long startTime = System.nanoTime();
-        boolean astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
+        boolean astraeaSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
         // long endTime = System.nanoTime();
 
         // System.out.println("*-* Astraea overhead: " + (endTime - startTime));
