@@ -128,6 +128,27 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         return result;        
     }
 
+
+    // VAIF-like implementation - just for overhead measurements
+    private boolean astraeaSpanStatusFS(String spanId){
+        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+            String line = br.readLine();
+            while (line != null) {
+                // System.out.println(" *-* Line " + line);                
+                if (line.equals(spanId)){
+                    // System.out.println(" *-* Disabling!! " + spanId);
+                    return false;
+                } 
+                line = br.readLine();
+            }
+        }catch(Exception e){
+            System.out.println("!! An error occurred. " + e.getMessage());
+        }
+        return true;
+    }
+
+
+
     // tsl: check for uppercase and int in the url - if so crop it
     static boolean urlLastPartCrop(String urlLastPart){
     

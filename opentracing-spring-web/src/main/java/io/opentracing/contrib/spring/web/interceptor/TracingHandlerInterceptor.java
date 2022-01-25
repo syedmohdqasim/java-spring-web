@@ -135,14 +135,14 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 // System.out.println(" *-* Line " + line);                
                 if (line.equals(spanId)){
                     // System.out.println(" *-* Disabling!! " + spanId);
-                    return true;
+                    return false;
                 } 
                 line = br.readLine();
             }
         }catch(Exception e){
             System.out.println("!! An error occurred. " + e.getMessage());
         }
-        return false;
+        return true;
     }
 
     // tsl: [ignore now] special condition for leaf spans = endswith ":1" isLeafFlag (no need leafflag now)
