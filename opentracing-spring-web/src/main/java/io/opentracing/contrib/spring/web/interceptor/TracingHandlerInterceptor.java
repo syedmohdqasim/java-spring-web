@@ -47,6 +47,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import java.util.HashSet;
+import java.lang.Thread;
 
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
@@ -75,7 +76,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     // private String message = null;
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    private final Object lock = new Object();
+    private HashSet<String> astraeaSpansProblemsSet = new HashSet<>(); 
+    // private final Object lock = new Object();
 
     /**
      * @param tracer
@@ -109,9 +111,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 }catch(Exception e){
                     System.out.println("!! An error occurred in timer task. " + e.getMessage());
                 }
-                synchronized (lock) {
-                    astraeaSpansSet = astraeaSpansSetLocal;
-                }
+                // synchronized (lock) {
+                //     astraeaSpansSet = astraeaSpansSetLocal;
+                // }
+                astraeaSpansSet = astraeaSpansSetLocal;
             }
         }, 0, 10000);
     }
@@ -152,17 +155,22 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
        
         boolean result = true;
-        synchronized (lock) {
-            if (astraeaSpansSet.contains(spanId)){
-                result = false;
-            }
-            // // if server span is leaf -- endsWith = ":1"
-            // else if (astraeaSpansSet.contains(spanId + ":1")){
-            //     result = 2;
-            // }
+        // synchronized (lock) {
+        if (astraeaSpansSet.contains(spanId)){
+                    result = false;
         }
+        // }
         // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
+    }
+
+
+    private void astraeaDelayInjected(String spanId){
+        if (astraeaSpansProblemsSet.contains(spanId)){
+            // sleep here
+            System.out.println(" *-* Sleep enabled for  server span!! " + spanId );
+
+        }
     }
 
     @Override
@@ -215,6 +223,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // long endTime = System.nanoTime();
 
         // System.out.println("*-* Astraea overhead: " + (endTime - startTime));
+
+
+        //tsl: inject delay
+        // astraeaDelayInjected(serviceName + ":" + opName);
+
 
 
         if ( !astraeaSpanStatus){ 

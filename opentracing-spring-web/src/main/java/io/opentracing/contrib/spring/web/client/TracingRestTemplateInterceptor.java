@@ -63,7 +63,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private static String serviceName = "";
 
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    private final Object lock = new Object();
+    private HashSet<String> astraeaSpansProblemsSet = new HashSet<>(); 
+    // private final Object lock = new Object();
 
     // private boolean serverDisabled = false;
 
@@ -106,9 +107,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }catch(Exception e){
                     System.out.println("!! An error occurred in timer task for rest. " + e.getMessage());
                 }
-                synchronized (lock) {
-                    astraeaSpansSet = astraeaSpansSetLocal;
-                }
+                // synchronized (lock) {
+                //     astraeaSpansSet = astraeaSpansSetLocal;
+                // }
+                astraeaSpansSet = astraeaSpansSetLocal;
                 // System.out.println("*-* Populated rest: " + astraeaSpansSet);
             }
         }, 0, 10000);
@@ -119,12 +121,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
         boolean result = true;
-        synchronized (lock) {
+        // synchronized (lock) {
             if (astraeaSpansSet.contains(spanId)){
                 result = false;
 
             }
-        }
+        // }
         return result;        
     }
 
@@ -180,6 +182,14 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-*  astraea URL : " + astraeaURL);
 
         return astraeaURL;
+    }
+
+    private void astraeaDelayInjected(String spanId){
+        if (astraeaSpansProblemsSet.contains(spanId)){
+            // sleep here
+            System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
+
+        }
     }
 
     @Override
