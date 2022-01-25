@@ -184,6 +184,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 try{
                     Thread.sleep(newdelay);
                     System.out.println("*-* Uyandim");
+                }
                 catch(InterruptedException e){
                     System.out.println("*-* Thread uyuma problemi!");
                 }
