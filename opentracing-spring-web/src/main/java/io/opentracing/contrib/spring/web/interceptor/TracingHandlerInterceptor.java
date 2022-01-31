@@ -172,7 +172,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
             int std = 5;
-            int delay = 25; // milisecond
+            int delay = 35; // milisecond
 
             Random randomno = new Random();
             double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
@@ -246,7 +246,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
 
         //tsl: inject delay
-        // astraeaDelayInjected(serviceName + ":" + opName);
+        astraeaDelayInjected(serviceName + ":" + opName);
 
 
 
