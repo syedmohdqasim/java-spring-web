@@ -188,6 +188,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     }
 
     private void astraeaDelayInjected(String spanId){
+        System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
+        
         if (astraeaSpansSet.contains("inject-" + spanId)){
             // sleep here
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
