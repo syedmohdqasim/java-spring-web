@@ -77,7 +77,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     // private String message = null;
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    // private final Object lock = new Object();
+    private final Object lock = new Object();
 
     /**
      * @param tracer
@@ -111,12 +111,13 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 }catch(Exception e){
                     System.out.println("!! An error occurred in timer task. " + e.getMessage());
                 }
-                // synchronized (lock) {
-                //     astraeaSpansSet = astraeaSpansSetLocal;
-                // }
-                astraeaSpansSet = astraeaSpansSetLocal;
+                synchronized (lock) {
+                    astraeaSpansSet = astraeaSpansSetLocal;
+                }
+                // astraeaSpansSet = astraeaSpansSetLocal;
+                System.out.println("*-* Populated server: " + astraeaSpansSet);
             }
-        }, 0, 10000);
+        }, 0, 5000);
     }
 
     /**
@@ -155,11 +156,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
        
         boolean result = true;
-        // synchronized (lock) {
+        synchronized (lock) {
         if (astraeaSpansSet.contains(spanId)){
                     result = false;
         }
-        // }
+        }
         // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
     }
@@ -168,8 +169,19 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private void astraeaDelayInjected(String spanId){
         System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
-        if (astraeaSpansSet.contains("inject-" + spanId)){
+        boolean isDelayed = false;
+
+        synchronized (lock) {
+            if (astraeaSpansSet.contains("inject-" + spanId)){
+                isDelayed = true;
+                
+            }else{
+                System.out.println(" *-* Nodelay enabled for span!! " + spanId );
+            }
+        }
+        if (isDelayed){
             // sleep here
+            isDelayed = false;
             System.out.println(" *-* Sleep enabled for span!! " + spanId );
 
             int std = 5;
@@ -190,9 +202,6 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     System.out.println("*-* Thread uyuma problemi!");
                 }
             }
-            
-        }else{
-            System.out.println(" *-* Nodelay enabled for span!! " + spanId );
         }
     }
 

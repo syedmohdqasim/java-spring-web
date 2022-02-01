@@ -66,7 +66,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private static String serviceName = "";
 
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    // private final Object lock = new Object();
+    private final Object lock = new Object();
 
     // private boolean serverDisabled = false;
 
@@ -111,12 +111,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                     System.out.println("!! An error occurred in timer task for rest. " + e.getMessage());
                 }
 
-                // synchronized (lock) {
+                synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
-                // }
-                // System.out.println("*-* Populated rest: " + astraeaSpansSet);
+                }
+                System.out.println("*-* Populated rest: " + astraeaSpansSet);
             }
-        }, 0, 10000);
+        }, 0, 5000);
 
     }
 
@@ -124,12 +124,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
         boolean result = true;
-        // synchronized (lock) {
+        synchronized (lock) {
             if (astraeaSpansSet.contains(spanId)){
                 result = false;
 
             }
-        // }
+        }
         return result;        
     }
 
@@ -189,8 +189,17 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     private void astraeaDelayInjected(String spanId){
         System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
-        
-        if (astraeaSpansSet.contains("inject-" + spanId)){
+        boolean isDelayed = false;
+        synchronized (lock) {
+            if (astraeaSpansSet.contains("inject-" + spanId)){
+                isDelayed = true;
+            }
+            else{
+                System.out.println(" *-* Nodelay enabled for client span!! " + spanId );
+            }
+        }
+        if (isDelayed){
+            isDelayed = false;
             // sleep here
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
@@ -211,9 +220,6 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                     System.out.println("*-* Thread uyuma problemi! client");
                 }
             }
-        }
-        else{
-            System.out.println(" *-* Nodelay enabled for client span!! " + spanId );
         }
     }
 
