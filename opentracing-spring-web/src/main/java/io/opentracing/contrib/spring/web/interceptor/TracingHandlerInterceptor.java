@@ -73,7 +73,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
-    private static String astraeaSpans = "/astraea-spans";
+    private static String astraeaSpans = "/astraea-spans/states";
 
     // private String message = null;
     private HashSet<String> astraeaSpansSet = new HashSet<>(); 

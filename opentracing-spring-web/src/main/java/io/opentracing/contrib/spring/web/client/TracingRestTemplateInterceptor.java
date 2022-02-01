@@ -61,7 +61,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
 
-    private static String astraeaSpans = "/astraea-spans";
+    private static String astraeaSpans = "/astraea-spans/states";
 
     private static String serviceName = "";
 
