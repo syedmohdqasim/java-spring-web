@@ -212,6 +212,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }
             }
         }
+        else{
+            System.out.println(" *-* Nodelay enabled for client span!! " + spanId );
+        }
     }
 
     @Override

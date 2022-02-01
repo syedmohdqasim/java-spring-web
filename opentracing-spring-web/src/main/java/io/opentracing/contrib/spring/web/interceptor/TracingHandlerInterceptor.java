@@ -170,7 +170,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
         if (astraeaSpansSet.contains("inject-" + spanId)){
             // sleep here
-            System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
+            System.out.println(" *-* Sleep enabled for span!! " + spanId );
 
             int std = 5;
             int delay = 50; // milisecond
@@ -191,6 +191,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 }
             }
             
+        }else{
+            System.out.println(" *-* Nodelay enabled for span!! " + spanId );
         }
     }
 
