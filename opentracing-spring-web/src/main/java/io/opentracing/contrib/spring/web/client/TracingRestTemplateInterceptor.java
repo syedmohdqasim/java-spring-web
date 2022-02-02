@@ -203,8 +203,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // sleep here
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
-            int std = 5;
-            int delay = 50; // milisecond
+            int std = 3;
+            int delay = 6; // milisecond
 
             Random randomno = new Random();
             double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
@@ -269,8 +269,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         String url = httpRequest.getURI().toString();
         // System.out.println("*-*  URL : " + url);
 
-        //tsl: inject delay
-        astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
+        
         
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             // System.out.println("*-*  Dsiabled by ASTRAEA");
@@ -353,6 +352,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                             log.error("Exception during decorating span", exDecorator);
                         }
                     }
+                    //tsl: inject delay
+                    astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
 
                     try {
                         httpResponse = execution.execute(httpRequest, body);
