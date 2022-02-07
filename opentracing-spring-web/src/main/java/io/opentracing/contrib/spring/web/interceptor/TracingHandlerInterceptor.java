@@ -115,9 +115,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
                 // astraeaSpansSet = astraeaSpansSetLocal;
-                System.out.println("*-* Populated server: " + astraeaSpansSet);
+                // System.out.println("*-* Populated server: " + astraeaSpansSet);
             }
-        }, 0, 5000);
+        }, 0, 10000);
     }
 
     /**
@@ -168,7 +168,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
 
     private void astraeaDelayInjected(String spanId){
-        System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
+        // System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
         boolean isDelayed = false;
 
         synchronized (lock) {
@@ -176,7 +176,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 isDelayed = true;
                 
             }else{
-                System.out.println(" *-* Nodelay enabled for span!! " + spanId );
+                // System.out.println(" *-* Nodelay enabled for span!! " + spanId );
             }
         }
         if (isDelayed){
@@ -189,17 +189,17 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
             Random randomno = new Random();
             double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
-            System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
+            // System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
 
             int newdelay = (int)sample;
             
             if(newdelay > 0){
                 try{
                     Thread.sleep(newdelay);
-                    System.out.println("*-* Uyandim");
+                    // System.out.println("*-* Uyandim");
                 }
                 catch(InterruptedException e){
-                    System.out.println("*-* Thread uyuma problemi!");
+                    // System.out.println("*-* Thread uyuma problemi!");
                 }
             }
         }

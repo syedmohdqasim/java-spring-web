@@ -114,9 +114,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
-                System.out.println("*-* Populated rest: " + astraeaSpansSet);
+                // System.out.println("*-* Populated rest: " + astraeaSpansSet);
             }
-        }, 0, 5000);
+        }, 0, 10000);
 
     }
 
@@ -188,14 +188,14 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     }
 
     private void astraeaDelayInjected(String spanId){
-        System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
+        // System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
         boolean isDelayed = false;
         synchronized (lock) {
             if (astraeaSpansSet.contains("inject-" + spanId)){
                 isDelayed = true;
             }
             else{
-                System.out.println(" *-* Nodelay enabled for client span!! " + spanId );
+                // System.out.println(" *-* Nodelay enabled for client span!! " + spanId );
             }
         }
         if (isDelayed){
@@ -208,16 +208,16 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
             Random randomno = new Random();
             double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
-            System.out.println("*-* Gaussian triggered for client span "+ spanId + " with " + String.valueOf(sample));
+            // System.out.println("*-* Gaussian triggered for client span "+ spanId + " with " + String.valueOf(sample));
 
             int newdelay = (int)sample;
             if(newdelay > 0){
                 try{
                     Thread.sleep(newdelay);
-                    System.out.println("*-* Uyandim client");
+                    // System.out.println("*-* Uyandim client");
                 }
                 catch(InterruptedException e){
-                    System.out.println("*-* Thread uyuma problemi! client");
+                    // System.out.println("*-* Thread uyuma problemi! client");
                 }
             }
         }
