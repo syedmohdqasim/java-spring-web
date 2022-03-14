@@ -209,9 +209,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler)
             throws Exception {
 
-        // if (!isTraced(httpServletRequest)) {
-        //     return true;
-        // }
+        if (!isTraced(httpServletRequest)) {
+            System.out.println("*-* Not traced");
+            return true;
+        }
 
          //tsl: now the active should be parent so that we can set the span context properly according to enable/disable
         Scope serverSpan = tracer.scopeManager().active();
