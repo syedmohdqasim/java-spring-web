@@ -76,6 +76,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     private static String astraeaSpans = "/astraea-spans/states";
 
+    private static String vaifSpans = "/astraea-spans/vaifstates";
+
     // private String message = null;
     // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
     private Hashtable<String, Float> astraeaSpansSet = new Hashtable<>();
@@ -138,12 +140,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     // VAIF-like implementation - just for overhead measurements
     private boolean astraeaSpanStatusFS(String spanId){
-        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
+        try(BufferedReader br = new BufferedReader(new FileReader(vaifSpans))) {
             String line = br.readLine();
             while (line != null) {
                 // System.out.println(" *-* Line " + line);                
                 if (line.equals(spanId)){
-                    // System.out.println(" *-* Disabling!! " + spanId);
+                    System.out.println(" *-* Disabling!! " + spanId);
                     return false;
                 } 
                 line = br.readLine();
@@ -226,6 +228,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object handler)
             throws Exception {
 
+
+        
+        long startTimeALL = System.nanoTime(); 
+
         if (!isTraced(httpServletRequest)) {
             System.out.println("*-* Not traced");
             return true;
@@ -268,16 +274,15 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // System.out.println("*-*  SVC: " +  serviceName);
         // System.out.println("*-*  OPNAME: " + opName );
 
-        // long startTime = System.nanoTime();
+        long startTime = System.nanoTime();
         boolean astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
-        // long endTime = System.nanoTime();
+        long endTime = System.nanoTime();
 
-        // System.out.println("*-* Astraea overhead: " + (endTime - startTime));
+        System.out.println("*-* Astraea overhead: " + (endTime - startTime));
 
 
         //tsl: inject delay
-        astraeaDelayInjected(serviceName + ":" + opName);
-
+        // astraeaDelayInjected(serviceName + ":" + opName);
 
         System.out.println("*-*  Checking now");
         if ( !astraeaSpanStatus){ 
@@ -291,6 +296,16 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
             }
         }
+
+        long endTimeALL = System.nanoTime(); 
+        System.out.println("*-* Log2 overhead: " + (endTimeALL - startTimeALL));
+
+
+        long startTime = System.nanoTime();
+        boolean vaifSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
+        long endTime = System.nanoTime();
+
+        System.out.println("*-* VAIF overhead: " + (endTime - startTime));
             
         // tsl: async requests are ignored for now
         // else{
