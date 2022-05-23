@@ -145,7 +145,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             while (line != null) {
                 // System.out.println(" *-* Line " + line);                
                 if (line.equals(spanId)){
-                    System.out.println(" *-* Disabling!! " + spanId);
+                    // System.out.println(" *-* Disabling!! " + spanId);
                     return false;
                 } 
                 line = br.readLine();
@@ -164,7 +164,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
        
         boolean result = true;
         Float dice =  randomDice.nextFloat()*100;
-        synchronized (lock) {
+        // synchronized (lock) {
         // if (astraeaSpansSet.contains(spanId)){
         //             result = false;
         // }
@@ -175,12 +175,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                  if (dice > spanProbability){
                     result = false; // disable span if random number is less than sampling probability
                 }
-                System.out.println("*-* Checking dice server span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result);
+                // System.out.println("*-* Checking dice server span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result);
 
             }
 
-        }
-        System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
+        // }
+        // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
     }
 
@@ -274,17 +274,17 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // System.out.println("*-*  SVC: " +  serviceName);
         // System.out.println("*-*  OPNAME: " + opName );
 
-        long startTime = System.nanoTime();
+        long startTimeAstraea = System.nanoTime();
         boolean astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
-        long endTime = System.nanoTime();
+        long endTimeAstraea = System.nanoTime();
 
-        System.out.println("*-* Astraea overhead: " + (endTime - startTime));
+        System.out.println("*-* Astraea overhead: " + (endTimeAstraea - startTimeAstraea));
 
 
         //tsl: inject delay
         // astraeaDelayInjected(serviceName + ":" + opName);
 
-        System.out.println("*-*  Checking now");
+        // System.out.println("*-*  Checking now");
         if ( !astraeaSpanStatus){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             // System.out.println("*-* Do not create soan for this");
