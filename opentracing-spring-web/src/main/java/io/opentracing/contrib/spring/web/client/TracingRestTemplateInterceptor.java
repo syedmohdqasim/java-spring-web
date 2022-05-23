@@ -110,7 +110,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                         while (line != null) {
                             // astraeaSpansSetLocal.add(line);
 
-                            astraeaSpansSetLocal.put(line.split(" ")[0], line.split(" ")[1]);
+                            astraeaSpansSetLocal.put(line.split(" ")[0], Float.parseFloat(line.split(" ")[1]));
                             line = br.readLine();
                         }
                 }catch(Exception e){
