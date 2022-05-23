@@ -120,7 +120,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
-                System.out.println("*-* Populated rest: " + astraeaSpansSet);
+                System.out.println("*-* Populated client spans: " + astraeaSpansSet);
             }
         }, 0, 10000);
 
@@ -289,7 +289,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-*  URL : " + url);
 
         
-        
+        System.out.println("*-*  Checking now");
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             // System.out.println("*-*  Dsiabled by ASTRAEA");
 

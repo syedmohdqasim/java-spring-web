@@ -120,7 +120,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
                 // astraeaSpansSet = astraeaSpansSetLocal;
-                System.out.println("*-* Populated server: " + astraeaSpansSet);
+                System.out.println("*-* Populated server spans: " + astraeaSpansSet);
             }
         }, 0, 10000);
     }
@@ -279,7 +279,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         astraeaDelayInjected(serviceName + ":" + opName);
 
 
-
+        System.out.println("*-*  Checking now");
         if ( !astraeaSpanStatus){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             // System.out.println("*-* Do not create soan for this");
