@@ -45,7 +45,7 @@ import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.HashSet;
-import java.util.HashTable;
+import java.util.Hashtable;
 
 import java.util.Random;
 
@@ -67,7 +67,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private static String serviceName = "";
 
     // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    private HashTable<String, Float> astraeaSpansSet = new HashTable<>();
+    private Hashtable<String, Float> astraeaSpansSet = new Hashtable<>();
     private final Object lock = new Object();
     private Random randomDice = new Random();
 
@@ -103,7 +103,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             public void run() {
                 // System.out.println("*-* Running rest: " + new java.util.Date());
                 // HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
-                HashTable<String, Float> astraeaSpansSetLocal = new HashTable<>();
+                Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
 
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
@@ -120,7 +120,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
-                // System.out.println("*-* Populated rest: " + astraeaSpansSet);
+                System.out.println("*-* Populated rest: " + astraeaSpansSet);
             }
         }, 0, 10000);
 

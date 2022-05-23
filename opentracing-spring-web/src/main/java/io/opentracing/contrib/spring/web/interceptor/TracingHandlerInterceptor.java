@@ -47,6 +47,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.lang.Thread;
 import java.util.Random;
 
@@ -77,7 +78,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
     // private String message = null;
     // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
-    private HashTable<String, Float> astraeaSpansSet = new HashTable<>();
+    private Hashtable<String, Float> astraeaSpansSet = new Hashtable<>();
     private Random randomDice = new Random();
     private final Object lock = new Object();
 
@@ -103,11 +104,13 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             @Override
             public void run() {
                 // System.out.println("*-* Running: " + new java.util.Date());
-                HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                // HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
                         while (line != null) {
-                            astraeaSpansSetLocal.add(line);
+                            // astraeaSpansSetLocal.add(line);
+                            astraeaSpansSetLocal.put(line.split(" ")[0], line.split(" ")[1]);
                             line = br.readLine();
                         }
                 }catch(Exception e){
@@ -117,7 +120,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
                 // astraeaSpansSet = astraeaSpansSetLocal;
-                // System.out.println("*-* Populated server: " + astraeaSpansSet);
+                System.out.println("*-* Populated server: " + astraeaSpansSet);
             }
         }, 0, 10000);
     }
