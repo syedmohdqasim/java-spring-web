@@ -137,7 +137,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // }
 
             // if not observed before so enabled by default
-            if (astraeaSpansSet.contains(spanId)){
+            if (astraeaSpansSet.containsKey(spanId)){
                 Float spanProbability = astraeaSpansSet.get(spanId);
                 
                  if (dice > spanProbability){
@@ -148,7 +148,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             }
         }
 
-
+        System.out.println(" *-* Enabling decision for  client span!! " + spanId + " == " + result); 
         return result;        
     }
 

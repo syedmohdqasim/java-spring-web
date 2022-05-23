@@ -167,7 +167,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         //             result = false;
         // }
             // if not observed before so enabled by default
-            if (astraeaSpansSet.contains(spanId)){
+            if (astraeaSpansSet.containsKey(spanId)){
                 Float spanProbability = astraeaSpansSet.get(spanId);
                 
                  if (dice > spanProbability){
@@ -178,7 +178,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             }
 
         }
-        // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
+        System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
     }
 
