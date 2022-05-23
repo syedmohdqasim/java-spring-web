@@ -143,7 +143,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                  if (dice > spanProbability){
                     result = false; // disable span if random number is less than sampling probability
                 }
-                System.out.println("*-* Checking dice client span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result.toString());
+                System.out.println("*-* Checking dice client span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result);
 
             }
         }
