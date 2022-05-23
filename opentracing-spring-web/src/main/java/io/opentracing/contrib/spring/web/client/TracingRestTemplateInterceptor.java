@@ -45,6 +45,7 @@ import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.HashSet;
+import java.util.HashTable;
 
 import java.util.Random;
 
@@ -65,8 +66,10 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     private static String serviceName = "";
 
-    private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    private HashTable<String, Float> astraeaSpansSet = new HashTable<>();
     private final Object lock = new Object();
+    private Random randomDice = new Random();
 
     // private boolean serverDisabled = false;
 
@@ -99,12 +102,15 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             @Override
             public void run() {
                 // System.out.println("*-* Running rest: " + new java.util.Date());
-                HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                // HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                HashTable<String, Float> astraeaSpansSetLocal = new HashTable<>();
 
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
                         while (line != null) {
-                            astraeaSpansSetLocal.add(line);
+                            // astraeaSpansSetLocal.add(line);
+
+                            astraeaSpansSetLocal.put(line.split(" ")[0], line.split(" ")[1]);
                             line = br.readLine();
                         }
                 }catch(Exception e){
@@ -119,17 +125,30 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         }, 0, 10000);
 
     }
-
+    // return result - span status i.e., false = disabled
     boolean astraeaSpanStatus(String spanId){
         // tsl: we need svc:operation:url
         // httpRequest.getHeaders().get("host").get(0).split(":")[0] :  httpRequest.getMethod() : httpRequest.getURI().toString()
         boolean result = true;
+        Float dice =  randomDice.nextFloat()*100;
         synchronized (lock) {
+            // if (astraeaSpansSet.contains(spanId)){
+            //     result = false;
+            // }
+
+            // if not observed before so enabled by default
             if (astraeaSpansSet.contains(spanId)){
-                result = false;
+                Float spanProbability = astraeaSpansSet.get(spanId);
+                
+                 if (dice > spanProbability){
+                    result = false; // disable span if random number is less than sampling probability
+                }
+                System.out.println("*-* Checking dice client span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result.toString());
 
             }
         }
+
+
         return result;        
     }
 

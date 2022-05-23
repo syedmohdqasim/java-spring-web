@@ -76,7 +76,9 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private static String astraeaSpans = "/astraea-spans/states";
 
     // private String message = null;
-    private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    private HashTable<String, Float> astraeaSpansSet = new HashTable<>();
+    private Random randomDice = new Random();
     private final Object lock = new Object();
 
     /**
@@ -156,10 +158,22 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
        
         boolean result = true;
+        Float dice =  randomDice.nextFloat()*100;
         synchronized (lock) {
-        if (astraeaSpansSet.contains(spanId)){
-                    result = false;
-        }
+        // if (astraeaSpansSet.contains(spanId)){
+        //             result = false;
+        // }
+            // if not observed before so enabled by default
+            if (astraeaSpansSet.contains(spanId)){
+                Float spanProbability = astraeaSpansSet.get(spanId);
+                
+                 if (dice > spanProbability){
+                    result = false; // disable span if random number is less than sampling probability
+                }
+                System.out.println("*-* Checking dice server span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result.toString());
+
+            }
+
         }
         // System.out.println(" *-* Enabling decision for  server span!! " + spanId + " == " + result); 
         return result;       
