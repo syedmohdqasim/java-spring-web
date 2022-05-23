@@ -301,11 +301,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         System.out.println("*-* Log2 overhead: " + (endTimeALL - startTimeALL));
 
 
-        long startTime = System.nanoTime();
+        long startTimeVAIF = System.nanoTime();
         boolean vaifSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
-        long endTime = System.nanoTime();
+        long endTimeVAIF = System.nanoTime();
 
-        System.out.println("*-* VAIF overhead: " + (endTime - startTime));
+        System.out.println("*-* VAIF overhead: " + (endTimeVAIF - startTimeVAIF));
             
         // tsl: async requests are ignored for now
         // else{
