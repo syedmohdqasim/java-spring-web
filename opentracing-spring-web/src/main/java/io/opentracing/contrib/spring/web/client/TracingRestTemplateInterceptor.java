@@ -120,7 +120,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
-                System.out.println("*-* Populated client spans: " + astraeaSpansSet);
+                // System.out.println("*-* Populated client spans: " + astraeaSpansSet);
             }
         }, 0, 10000);
 
@@ -143,12 +143,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                  if (dice > spanProbability){
                     result = false; // disable span if random number is less than sampling probability
                 }
-                System.out.println("*-* Checking dice client span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result);
+                // System.out.println("*-* Checking dice client span "+ spanId +  " with " + String.valueOf(spanProbability) + " dice " + String.valueOf(dice) + " status " + result);
 
             }
         }
 
-        System.out.println(" *-* Enabling decision for  client span!! " + spanId + " == " + result); 
+        // System.out.println(" *-* Enabling decision for  client span!! " + spanId + " == " + result); 
         return result;        
     }
 
@@ -289,7 +289,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-*  URL : " + url);
 
         
-        System.out.println("*-*  Checking now");
+        // System.out.println("*-*  Checking now");
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             // System.out.println("*-*  Dsiabled by ASTRAEA");
 
@@ -372,7 +372,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                         }
                     }
                     //tsl: inject delay
-                    astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
+                    // astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
 
                     try {
                         httpResponse = execution.execute(httpRequest, body);

@@ -122,7 +122,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                     astraeaSpansSet = astraeaSpansSetLocal;
                 }
                 // astraeaSpansSet = astraeaSpansSetLocal;
-                System.out.println("*-* Populated server spans: " + astraeaSpansSet);
+                // System.out.println("*-* Populated server spans: " + astraeaSpansSet);
             }
         }, 0, 10000);
     }
@@ -230,7 +230,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
 
         
-        long startTimeALL = System.nanoTime(); 
+        // long startTimeALL = System.nanoTime(); 
 
         if (!isTraced(httpServletRequest)) {
             System.out.println("*-* Not traced");
@@ -274,11 +274,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // System.out.println("*-*  SVC: " +  serviceName);
         // System.out.println("*-*  OPNAME: " + opName );
 
-        long startTimeAstraea = System.nanoTime();
+        // long startTimeAstraea = System.nanoTime();
         boolean astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
-        long endTimeAstraea = System.nanoTime();
+        // long endTimeAstraea = System.nanoTime();
 
-        System.out.println("*-* Astraea overhead: " + (endTimeAstraea - startTimeAstraea));
+        // System.out.println("*-* Astraea overhead: " + (endTimeAstraea - startTimeAstraea));
 
 
         //tsl: inject delay
@@ -297,15 +297,15 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             }
         }
 
-        long endTimeALL = System.nanoTime(); 
-        System.out.println("*-* Log2 overhead: " + (endTimeALL - startTimeALL));
+        // long endTimeALL = System.nanoTime(); 
+        // System.out.println("*-* Log2 overhead: " + (endTimeALL - startTimeALL));
 
 
-        long startTimeVAIF = System.nanoTime();
-        boolean vaifSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
-        long endTimeVAIF = System.nanoTime();
+        // long startTimeVAIF = System.nanoTime();
+        // boolean vaifSpanStatus = astraeaSpanStatusFS(serviceName + ":" + opName);
+        // long endTimeVAIF = System.nanoTime();
 
-        System.out.println("*-* VAIF overhead: " + (endTimeVAIF - startTimeVAIF));
+        // System.out.println("*-* VAIF overhead: " + (endTimeVAIF - startTimeVAIF));
             
         // tsl: async requests are ignored for now
         // else{
