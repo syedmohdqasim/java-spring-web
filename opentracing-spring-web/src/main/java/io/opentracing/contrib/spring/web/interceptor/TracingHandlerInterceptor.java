@@ -75,11 +75,12 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private List<HandlerInterceptorSpanDecorator> decorators;
 
     private static String astraeaSpans = "/astraea-spans/states";
+    private static String astraeaSpansSleep = "/astraea-spans/sleeps";
 
     private static String vaifSpans = "/astraea-spans/vaifstates";
 
     // private String message = null;
-    // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    private HashSet<String> astraeaSpansSleepSet = new HashSet<>(); 
     private Hashtable<String, Float> astraeaSpansSet = new Hashtable<>();
     private Random randomDice = new Random();
     private final Object lock = new Object();
@@ -106,7 +107,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             @Override
             public void run() {
                 // System.out.println("*-* Running: " + new java.util.Date());
-                // HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                HashSet<String> astraeaSpansSleepSetLocal = new HashSet<>(); 
                 Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
@@ -118,8 +119,23 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 }catch(Exception e){
                     System.out.println("!! An error occurred in timer task. " + e.getMessage());
                 }
+
+                try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpansSleep))) {
+                        String line = br.readLine();
+                        while (line != null) {
+                            astraeaSpansSleepSetLocal.add(line);
+                            line = br.readLine();
+                        }
+                }catch(Exception e){
+                    System.out.println("!! An error occurred in timer task sleeps. " + e.getMessage());
+                }
+
+
+
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
+                    astraeaSpansSleepSet = astraeaSpansSleepSetLocal;
+
                 }
                 // astraeaSpansSet = astraeaSpansSetLocal;
                 // System.out.println("*-* Populated server spans: " + astraeaSpansSet);
@@ -191,7 +207,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         boolean isDelayed = false;
 
         synchronized (lock) {
-            if (astraeaSpansSet.contains("inject-" + spanId)){
+            // if (astraeaSpansSleepSet.contains("inject-" + spanId)){
+            if (astraeaSpansSleepSet.contains(spanId)){
                 isDelayed = true;
                 
             }else{
@@ -282,7 +299,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
 
         //tsl: inject delay
-        // astraeaDelayInjected(serviceName + ":" + opName);
+        astraeaDelayInjected(serviceName + ":" + opName);
 
         // System.out.println("*-*  Checking now");
         if ( !astraeaSpanStatus){ 

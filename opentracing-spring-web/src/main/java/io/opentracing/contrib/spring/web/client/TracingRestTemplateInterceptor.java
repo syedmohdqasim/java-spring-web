@@ -63,10 +63,12 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private SpanContext parentSpanContext;
 
     private static String astraeaSpans = "/astraea-spans/states";
+    private static String astraeaSpansSleep = "/astraea-spans/sleeps";
 
     private static String serviceName = "";
 
     // private HashSet<String> astraeaSpansSet = new HashSet<>(); 
+    private HashSet<String> astraeaSpansSleepSet = new HashSet<>(); 
     private Hashtable<String, Float> astraeaSpansSet = new Hashtable<>();
     private final Object lock = new Object();
     private Random randomDice = new Random();
@@ -103,6 +105,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             public void run() {
                 // System.out.println("*-* Running rest: " + new java.util.Date());
                 // HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
+                HashSet<String> astraeaSpansSleepSetLocal = new HashSet<>(); 
                 Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
 
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
@@ -117,8 +120,19 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                     System.out.println("!! An error occurred in timer task for rest. " + e.getMessage());
                 }
 
+                try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpansSleep))) {
+                        String line = br.readLine();
+                        while (line != null) {
+                            astraeaSpansSleepSetLocal.add(line);
+                            line = br.readLine();
+                        }
+                }catch(Exception e){
+                    System.out.println("!! An error occurred in timer task sleeps. " + e.getMessage());
+                }
+
                 synchronized (lock) {
                     astraeaSpansSet = astraeaSpansSetLocal;
+                    astraeaSpansSleepSet = astraeaSpansSleepSetLocal;
                 }
                 // System.out.println("*-* Populated client spans: " + astraeaSpansSet);
             }
@@ -210,7 +224,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println(" *-* checking delay now client " + spanId + "\n"+ astraeaSpansSet);
         boolean isDelayed = false;
         synchronized (lock) {
-            if (astraeaSpansSet.contains("inject-" + spanId)){
+            // if (astraeaSpansSet.contains("inject-" + spanId)){
+            if (astraeaSpansSleepSet.contains(spanId)){
                 isDelayed = true;
             }
             else{
@@ -335,7 +350,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                             log.error("Exception during decorating span", exDecorator);
                         }
                     }
-
+                    //tsl: inject delay
+                    astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
                     try {
                         httpResponse = execution.execute(httpRequest, body);
                     } catch (Exception ex) {
@@ -372,7 +388,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                         }
                     }
                     //tsl: inject delay
-                    // astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
+                    astraeaDelayInjected(serviceName + ":" + op + ":" + astraeaURLFormat(url));
 
                     try {
                         httpResponse = execution.execute(httpRequest, body);
