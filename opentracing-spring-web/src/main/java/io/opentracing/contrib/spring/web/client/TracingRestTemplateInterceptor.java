@@ -136,7 +136,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }
                 // System.out.println("*-* Populated client spans: " + astraeaSpansSet);
             }
-        }, 0, 10000);
+        }, 0, 5000);
 
     }
     // return result - span status i.e., false = disabled
