@@ -305,7 +305,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         if ( !astraeaSpanStatus){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
             // System.out.println("*-* Do not create soan for this");
-            serverSpan.close();          
+            //serverSpan.close();  
+            serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
         }
         else{ // we do nothing as server span is enabled
         //     System.out.println("*-* Creating server span now");
