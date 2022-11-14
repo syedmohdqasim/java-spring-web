@@ -140,7 +140,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 // astraeaSpansSet = astraeaSpansSetLocal;
                 // System.out.println("*-* Populated server spans: " + astraeaSpansSet);
             }
-        }, 0, 10000);
+        }, 0, 5000);
     }
 
     /**
