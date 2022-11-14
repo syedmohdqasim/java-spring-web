@@ -277,7 +277,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         for (String key : rawHeaders.keySet()) {
             headersClient.put(key, rawHeaders.get(key).get(0));
         }
-        SpanContext parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+        SpanContext parentSpanNow = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headersClient));
 
         // System.out.println("*-* grand parent here: " + parentSpanContext  );
@@ -290,6 +290,21 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // System.out.println("*-*  ex span " + serverSpan.span());
         } else {
             // System.out.println("*-*  server ex span is null ");
+            serverDisabled = true;
+        }
+        
+        if (serverSpan.span().getBaggageItem("astraea") != null){
+            // System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
+
+            String contextInBag = serverSpan.span().getBaggageItem("astraea");
+            final HashMap<String, String> headers = new HashMap<String, String>();
+            headers.put("uber-trace-id", contextInBag);
+            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                            new TextMapExtractAdapter(headers));
+
+            // System.out.println("*-*  Cokemelli2 " + parentSpanContext);
+
+            serverSpan.close();
             serverDisabled = true;
         }
 
