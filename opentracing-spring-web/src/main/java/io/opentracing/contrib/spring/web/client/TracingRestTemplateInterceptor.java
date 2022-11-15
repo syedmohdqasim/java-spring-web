@@ -335,7 +335,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // SpanContext parentSpan;
 
             if (serverDisabled) { // if server span is disabled get the span context from baggage i.e., astraea -> parentSpanContext
-                System.out.println("*-*  Server span is disabled so getting span context from parent", parentSpanContext);
+                System.out.println("*-*  Server span is disabled so getting span context from parent"+ parentSpanContext);
 
                 // create span with parent
                 try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
