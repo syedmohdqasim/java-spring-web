@@ -267,9 +267,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
         
-        // System.out.println("*-* tracer for svc name "  + serviceName);
-        // System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
-        // System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
+        System.out.println("*-* tracer for svc name "  + serviceName);
+        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
+        System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
         // now client span has a parent server span -  below we get parentspan of server span (i.e., grandparent)
         MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
@@ -277,6 +277,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         for (String key : rawHeaders.keySet()) {
             headersClient.put(key, rawHeaders.get(key).get(0));
         }
+        // if this is executed after same service's server span -- we have the parent
         SpanContext parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headersClient));
 

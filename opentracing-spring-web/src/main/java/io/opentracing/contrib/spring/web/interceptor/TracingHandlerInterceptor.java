@@ -310,26 +310,26 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             System.out.println("*-* Do not create soan for this");
             // serverSpan.close();          
             // we may wanna pass the parent span context for disabled server span (and not close server span)
-            // serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
+            serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
             
-            // now we are continuing whatever the previous span is -- as server span is disabled
-            if (serverSpan == null){
-                serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-                        .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-                        .startActive(true);
-                serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-                Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
-                activeSpanStack.push(serverSpan);
-            } // if there were no server spans, we create dummy one
-            else{
-                serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-                        .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-                        .startActive(true);
-                serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-                Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
-                activeSpanStack.pop(); // forget previous server span and add new one
-                activeSpanStack.push(serverSpan);
-            }
+            // // now we are continuing whatever the previous span is -- as server span is disabled
+            // if (serverSpan == null){
+            //     serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
+            //             .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
+            //             .startActive(true);
+            //     serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
+            //     Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
+            //     activeSpanStack.push(serverSpan);
+            // } // if there were no server spans, we create dummy one
+            // else{
+            //     serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
+            //             .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
+            //             .startActive(true);
+            //     serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
+            //     Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
+            //     activeSpanStack.pop(); // forget previous server span and add new one
+            //     activeSpanStack.push(serverSpan);
+            // }
 
             //serverSpan.close(); // not closing it though
         }
