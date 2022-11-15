@@ -267,9 +267,9 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
         
-        System.out.println("*-* tracer for svc name "  + serviceName);
-        System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
-        System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
+        // System.out.println("*-* tracer for svc name "  + serviceName);
+        // System.out.println("*-* Client http req" + httpRequest.getURI().toString() + " " +  httpRequest.getMethod());
+        // System.out.println("*-*  Headers now at the beginning of client  " + httpRequest.getHeaders());
 
         // now client span has a parent server span -  below we get parentspan of server span (i.e., grandparent)
         MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
@@ -277,36 +277,19 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         for (String key : rawHeaders.keySet()) {
             headersClient.put(key, rawHeaders.get(key).get(0));
         }
-        // if this is executed after same service's server span -- we have the parent
         SpanContext parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headersClient));
 
-        System.out.println("*-*  parent span context here: " + parentSpanContext  );
+        // System.out.println("*-* grand parent here: " + parentSpanContext  );
 
         // toslali: get server span here - if null then it is disabled by astraea already
         Scope serverSpan = tracer.scopeManager().active();
 
         // tsl: remove below later
         if (serverSpan != null) {
-            System.out.println("*-*  Active span now " + serverSpan.span());
+            // System.out.println("*-*  ex span " + serverSpan.span());
         } else {
-            System.out.println("*-*  server ex span is null ");
-            // serverDisabled = true;
-        }
-
-        // if server span is disabled, we need the context of its parent so get it from baggage
-        if (serverSpan.span().getBaggageItem("astraea") != null){
-            System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
-
-            String contextInBag = serverSpan.span().getBaggageItem("astraea");            
-            final HashMap<String, String> headers = new HashMap<String, String>();
-            headers.put("uber-trace-id", contextInBag);
-            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                            new TextMapExtractAdapter(headers));
-
-            System.out.println("*-*  Cokemelli2 " + parentSpanContext);
-
-            serverSpan.close(); // maybe we donot want to close server span so that context does not get lost
+            // System.out.println("*-*  server ex span is null ");
             serverDisabled = true;
         }
 
@@ -321,18 +304,18 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-*  URL : " + url);
 
         
-        // Client disabled - enter here
+        // System.out.println("*-*  Checking now");
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
-            System.out.println("*-*  Dsiabled by ASTRAEA");
+            // System.out.println("*-*  Dsiabled by ASTRAEA");
 
-            // server is enabled tho
+            // if (serverSpan != null) {
             if (!serverDisabled){
-                System.out.println("*-*  server span is here so  injecting");
+                // System.out.println("*-*  server span is here so  injecting");
                 // tsl: that  works for disabling client span -- paassing the server span context
                 tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             } else {
-                System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
+                // System.out.println("*-*  server spn is null so injecting REQUESTS INCOMING SPAN ");
                 tracer.inject(parentSpanContext, Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             }
@@ -345,11 +328,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             }
           
         } else {
-            System.out.println("*-*  Client Enabled by ASTRAEA");
+            // System.out.println("*-*  Client Enabled by ASTRAEA");
             // SpanContext parentSpan;
 
             if (serverDisabled) { // if server span is disabled get the span context from baggage i.e., astraea -> parentSpanContext
-                System.out.println("*-*  Server span is disablled, creating span as child of " + parentSpanContext);
+                // System.out.println("*-*  Server span is disablled so getting span context from bagg");
 
                 // create span with parent
                 try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())

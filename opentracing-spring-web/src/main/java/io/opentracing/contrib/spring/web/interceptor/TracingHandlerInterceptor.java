@@ -258,13 +258,10 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         Scope serverSpan = tracer.scopeManager().active();
         
         // System.out.println("*-* gelmistik tracing handler");
-        if (serverSpan != null){
-            System.out.println("*-* Server span at handler: " +  serverSpan.span());
+        // if (serverSpan != null){
+        //     System.out.println("*-* Server information at handler: " +  serverSpan.span());
             
-        }
-        else{
-            System.out.println("*-* Server span at handler is null " );
-        }
+        // }
 
         String tracerService = tracer.toString();
         String serviceName = tracerService.substring(tracerService.indexOf("serviceName=") + 12 , tracerService.indexOf(", reporter="));
@@ -272,7 +269,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
 
         SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
             new HttpServletRequestExtractAdapter(httpServletRequest));
-        System.out.println("*-* Extracted parent context at server: " + extractedContext);
+        // System.out.println("*-* Extracted context from parent " + extractedContext);
 
         String opName =  handler instanceof HandlerMethod ?
                         ((HandlerMethod) handler).getMethod().getName() : null;
@@ -291,8 +288,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // tsl: aSTRAEA baggage item to pass parent context into client if serverspan is disabled
         // httpServletRequest.getHeader("host").get(0).split(":")[0] : opName
         String svc = httpServletRequest.getHeader("host").split(":")[0];
-        System.out.println("*-*  server SVC: " +  serviceName);
-        System.out.println("*-*  server OPNAME: " + opName );
+        // System.out.println("*-*  SVC: " +  serviceName);
+        // System.out.println("*-*  OPNAME: " + opName );
 
         // long startTimeAstraea = System.nanoTime();
         boolean astraeaSpanStatus = astraeaSpanStatus(serviceName + ":" + opName);
@@ -307,34 +304,11 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // System.out.println("*-*  Checking now");
         if ( !astraeaSpanStatus){ 
             // opName.equalsIgnoreCase("getRouteByTripId2")
-            System.out.println("*-* Do not create soan for this");
-            // serverSpan.close();          
-            // we may wanna pass the parent span context for disabled server span (and not close server span)
-            serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-            
-            // // now we are continuing whatever the previous span is -- as server span is disabled
-            // if (serverSpan == null){
-            //     serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-            //             .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-            //             .startActive(true);
-            //     serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-            //     Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
-            //     activeSpanStack.push(serverSpan);
-            // } // if there were no server spans, we create dummy one
-            // else{
-            //     serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-            //             .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-            //             .startActive(true);
-            //     serverSpan.span().setBaggageItem("astraea", extractedContext.toString());
-            //     Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
-            //     activeSpanStack.pop(); // forget previous server span and add new one
-            //     activeSpanStack.push(serverSpan);
-            // }
-
-            //serverSpan.close(); // not closing it though
+            // System.out.println("*-* Do not create soan for this");
+            serverSpan.close();          
         }
         else{ // we do nothing as server span is enabled
-            System.out.println("*-* Creating server span now");
+        //     System.out.println("*-* Creating server span now");
             for (HandlerInterceptorSpanDecorator decorator : decorators) {
                 decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
             }
@@ -353,40 +327,40 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         // tsl: async requests are ignored for now
         // else{
 
-            if (serverSpan == null) {
-                System.out.println("*-* Null olmustu ");
-                if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
-                    Span contd = (Span) httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED);
-                    serverSpan = tracer.scopeManager().activate(contd, false);
-                    httpServletRequest.removeAttribute(CONTINUATION_FROM_ASYNC_STARTED);
-                } else {
-                    // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
-            System.out.println("*-* Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
+        //     if (serverSpan == null) {
+        //         System.out.println("*-* Null olmustu ");
+        //         if (httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED) != null) {
+        //             Span contd = (Span) httpServletRequest.getAttribute(CONTINUATION_FROM_ASYNC_STARTED);
+        //             serverSpan = tracer.scopeManager().activate(contd, false);
+        //             httpServletRequest.removeAttribute(CONTINUATION_FROM_ASYNC_STARTED);
+        //         } else {
+        //             // spring boot default error handling, executes interceptor after processing in the filter (ugly huh?)
+        //     System.out.println("*-* Prehandle Client http req" + httpServletRequest.getRequestURI().toString() + httpServletRequest.getMethod());
     
-                    serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
-                            .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
-                            .startActive(true);
+        //             serverSpan = tracer.buildSpan(httpServletRequest.getMethod())
+        //                     .addReference(References.FOLLOWS_FROM, TracingFilter.serverSpanContext(httpServletRequest))
+        //                     .startActive(true);
     
-                    // if (opName.equalsIgnoreCase("getRouteByTripId")){
-                    //     System.out.println("*-* Do not create soan for this");
-                    // }
-                    // else{
+        //             // if (opName.equalsIgnoreCase("getRouteByTripId")){
+        //             //     System.out.println("*-* Do not create soan for this");
+        //             // }
+        //             // else{
                         
-                    //     System.out.println("*-* Creating the new span now");
-                    //     SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
-                    //     new HttpServletRequestExtractAdapter(httpServletRequest));
+        //             //     System.out.println("*-* Creating the new span now");
+        //             //     SpanContext extractedContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+        //             //     new HttpServletRequestExtractAdapter(httpServletRequest));
     
-                    //     serverSpan = tracer.buildSpan(opName)
-                    //     .asChildOf(extractedContext)
-                    //     // .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
-                    //     .startActive(true);
+        //             //     serverSpan = tracer.buildSpan(opName)
+        //             //     .asChildOf(extractedContext)
+        //             //     // .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_SERVER)
+        //             //     .startActive(true);
     
-                    // }
+        //             // }
     
-                }
-                Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
-                activeSpanStack.push(serverSpan);
-            }
+        //         }
+        //         Deque<Scope> activeSpanStack = getScopeStack(httpServletRequest);
+        //         activeSpanStack.push(serverSpan);
+        //     }
     
         //     for (HandlerInterceptorSpanDecorator decorator : decorators) {
         //         decorator.onPreHandle(httpServletRequest, handler, serverSpan.span());
