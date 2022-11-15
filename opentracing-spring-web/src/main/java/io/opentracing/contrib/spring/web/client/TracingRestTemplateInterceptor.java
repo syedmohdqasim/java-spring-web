@@ -293,7 +293,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // serverDisabled = true;
         }
 
-        // if server span is disabled, we need the context of its parent so get it from baggage
+        if server span is disabled, we need the context of its parent so get it from baggage
         if (serverSpan.span().getBaggageItem("astraea") != null){
             System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
 
@@ -305,7 +305,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
             System.out.println("*-*  Cokemelli2 " + parentSpanContext);
 
-            // serverSpan.close(); // maybe we donot want to close server span so that context does not get lost
+            serverSpan.close(); // maybe we donot want to close server span so that context does not get lost
             serverDisabled = true;
         }
 
@@ -320,11 +320,11 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-*  URL : " + url);
 
         
-        // System.out.println("*-*  Checking now");
+        // Client disabled - enter here
         if (!astraeaSpanStatus(serviceName + ":" + op + ":" + astraeaURLFormat(url))) { // if client span disabled by ASTRAEA ; toslali: start the span but inject parent context!!!
             System.out.println("*-*  Dsiabled by ASTRAEA");
 
-            // if (serverSpan != null) {
+            // server is enabled tho
             if (!serverDisabled){
                 System.out.println("*-*  server span is here so  injecting");
                 // tsl: that  works for disabling client span -- paassing the server span context
