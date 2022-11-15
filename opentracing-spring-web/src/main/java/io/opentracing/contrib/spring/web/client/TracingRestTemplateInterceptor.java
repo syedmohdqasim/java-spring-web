@@ -318,7 +318,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 tracer.inject(serverSpan.span().context(), Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             } else {
-                System.out.println("*-*  server spn is disabled so injecting REQUESTS INCOMING SPAN ", parentSpanContext);
+                System.out.println("*-*  server spn is disabled so injecting REQUESTS INCOMING SPAN "+ parentSpanContext);
                 tracer.inject(parentSpanContext, Format.Builtin.HTTP_HEADERS,
                         new HttpHeadersCarrier(httpRequest.getHeaders()));
             }
