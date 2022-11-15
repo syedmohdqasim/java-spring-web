@@ -293,7 +293,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             // serverDisabled = true;
         }
 
-        if server span is disabled, we need the context of its parent so get it from baggage
+        // if server span is disabled, we need the context of its parent so get it from baggage
         if (serverSpan.span().getBaggageItem("astraea") != null){
             System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
 
