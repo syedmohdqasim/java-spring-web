@@ -290,6 +290,22 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
             System.out.println("*-*  Active span now " + serverSpan.span());
         } else {
             System.out.println("*-*  server ex span is null ");
+            // serverDisabled = true;
+        }
+
+        // if server span is disabled, we need the context of its parent so get it from baggage
+        if (serverSpan.span().getBaggageItem("astraea") != null){
+            System.out.println("*-*  Cokemelli " + serverSpan.span().getBaggageItem("astraea"));
+
+            String contextInBag = serverSpan.span().getBaggageItem("astraea");            
+            final HashMap<String, String> headers = new HashMap<String, String>();
+            headers.put("uber-trace-id", contextInBag);
+            parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
+                            new TextMapExtractAdapter(headers));
+
+            System.out.println("*-*  Cokemelli2 " + parentSpanContext);
+
+            // serverSpan.close(); // maybe we donot want to close server span so that context does not get lost
             serverDisabled = true;
         }
 
