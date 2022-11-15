@@ -304,7 +304,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println("*-*  URL : " + url);
 
 
-        System.out.println("Client span now " + serviceName + ":" + op + ":" + astraeaURLFormat(url)));
+        System.out.println("Client span now " + serviceName + ":" + op + ":" + astraeaURLFormat(url));
 
         
         // System.out.println("*-*  Checking now");
@@ -378,7 +378,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 }
 
             } else {
-                
+
                 try (Scope scope = tracer.buildSpan(httpRequest.getMethod().toString())
                         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT).startActive(true)) {
                     tracer.inject(scope.span().context(), Format.Builtin.HTTP_HEADERS,
