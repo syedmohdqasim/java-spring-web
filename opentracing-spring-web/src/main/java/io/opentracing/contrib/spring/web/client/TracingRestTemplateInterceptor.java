@@ -275,7 +275,13 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         MultiValueMap<String, String> rawHeaders = httpRequest.getHeaders();
         final HashMap<String, String> headersClient = new HashMap<String, String>();
         for (String key : rawHeaders.keySet()) {
-            headersClient.put(key, rawHeaders.get(key).get(0));
+            System.out.println("*-* check header key " + key + " value: " +  rawHeaders.get(key));
+
+            // Collection<String> coll = ;
+            // sometimes there are multiple in header, so get the last one
+            ArrayList<String> newList = new ArrayList<>(rawHeaders.get(key));
+            // headersClient.put(key, rawHeaders.get(key).get(0));
+            headersClient.put(key, newList.get(newList.size()-1));
         }
         SpanContext parentSpanContext = tracer.extract(Format.Builtin.HTTP_HEADERS,
                             new TextMapExtractAdapter(headersClient));
