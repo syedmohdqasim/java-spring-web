@@ -117,17 +117,18 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 try {
                         downloadFile(spanFileUrl, astraeaSpans);
                         System.out.println("Span File downloaded successfully.");
-                        } catch (IOException e) {
+                     } catch (IOException e)
+                     {
                             System.err.println("Span Error downloading file: " + e.getMessage());
-                        }
-                    }
+                     }
+
                 try {
                         downloadFile(sleepFileUrl, astraeaSpansSleep);
                         System.out.println(Sleep "File downloaded successfully.");
                         } catch (IOException e) {
                             System.err.println("Sleep Error downloading file: " + e.getMessage());
                         }
-                    }
+
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
                         while (line != null) {
@@ -198,6 +199,7 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
+        }
         }
     }
 
