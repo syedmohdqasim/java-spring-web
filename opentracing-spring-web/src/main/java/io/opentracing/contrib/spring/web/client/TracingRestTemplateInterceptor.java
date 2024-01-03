@@ -6,6 +6,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -62,6 +67,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
     private List<RestTemplateSpanDecorator> spanDecorators;
     private SpanContext parentSpanContext;
 
+    String spanFileUrl = "https://stack.nerc.mghpcc.org/dashboard/api/swift/containers/astraea/object/tt-astraea-spans/spans";
+    String sleepFileUrl = "https://stack.nerc.mghpcc.org/dashboard/api/swift/containers/astraea/object/tt-astraea-spans/sleeps";
     private static String astraeaSpans = "/astraea-spans/spans";
     private static String astraeaSpansSleep = "/astraea-spans/sleeps";
 
@@ -107,7 +114,20 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
                 // HashSet<String> astraeaSpansSetLocal = new HashSet<>(); 
                 HashSet<String> astraeaSpansSleepSetLocal = new HashSet<>(); 
                 Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
-
+                try {
+                        downloadFile(spanFileUrl, astraeaSpans);
+                        System.out.println("Span File downloaded successfully.");
+                        } catch (IOException e) {
+                            System.err.println("Span Error downloading file: " + e.getMessage());
+                        }
+                    }
+                try {
+                        downloadFile(sleepFileUrl, astraeaSpansSleep);
+                        System.out.println(Sleep "File downloaded successfully.");
+                        } catch (IOException e) {
+                            System.err.println("Sleep Error downloading file: " + e.getMessage());
+                        }
+                    }
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
                         while (line != null) {
@@ -164,6 +184,21 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
         // System.out.println(" *-* Enabling decision for  client span!! " + spanId + " == " + result); 
         return result;        
+    }
+private static void downloadFile(String fileUrl, String destinationPath) throws IOException {
+        URL url = new URL(fileUrl);
+        URLConnection connection = url.openConnection();
+
+        try (InputStream inputStream = connection.getInputStream();
+             FileOutputStream outputStream = new FileOutputStream(destinationPath)) {
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        }
     }
 
 

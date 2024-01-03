@@ -106,7 +106,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                // System.out.println("*-* Running: " + new java.util.Date());
+                System.out.println("*-* Running Syed: " + new java.util.Date());
                 HashSet<String> astraeaSpansSleepSetLocal = new HashSet<>(); 
                 Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
