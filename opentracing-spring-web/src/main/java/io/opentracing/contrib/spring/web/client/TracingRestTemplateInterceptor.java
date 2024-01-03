@@ -69,8 +69,8 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
     String spanFileUrl = "https://stack.nerc.mghpcc.org:13808/swift/v1/AUTH_7d29ffa4b66b410ba9280e81069f2799/astraea/tt-astraea-spans/spans";
     String sleepFileUrl = "https://stack.nerc.mghpcc.org:13808/swift/v1/AUTH_7d29ffa4b66b410ba9280e81069f2799/astraea/tt-astraea-spans/sleep";
-    private static String astraeaSpans = "/astraea-spans/spans";
-    private static String astraeaSpansSleep = "/astraea-spans/sleeps";
+    private static String astraeaSpans = "/tmp/spans";
+    private static String astraeaSpansSleep = "/tmp/sleeps";
 
     private static String serviceName = "";
 
