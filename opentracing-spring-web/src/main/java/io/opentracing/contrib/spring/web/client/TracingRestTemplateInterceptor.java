@@ -124,7 +124,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
 
                 try {
                         downloadFile(sleepFileUrl, astraeaSpansSleep);
-                        System.out.println(Sleep "File downloaded successfully.");
+                        System.out.println("Sleep File downloaded successfully.");
                         } catch (IOException e) {
                             System.err.println("Sleep Error downloading file: " + e.getMessage());
                         }
@@ -186,6 +186,7 @@ public class TracingRestTemplateInterceptor implements ClientHttpRequestIntercep
         // System.out.println(" *-* Enabling decision for  client span!! " + spanId + " == " + result); 
         return result;        
     }
+
 private static void downloadFile(String fileUrl, String destinationPath) throws IOException {
         URL url = new URL(fileUrl);
         URLConnection connection = url.openConnection();
@@ -201,7 +202,7 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             }
         }
         }
-    }
+
 
 
     // VAIF-like implementation - just for overhead measurements
