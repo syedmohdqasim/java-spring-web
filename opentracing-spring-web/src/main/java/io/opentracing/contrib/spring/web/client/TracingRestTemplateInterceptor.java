@@ -279,6 +279,7 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             int std = 500;
             if (astraeaSpansSet.contains("sd")){
                 std= astraeaSpansSet.get("sd").intValue();
+                System.out.println(" *-*sd value used:"+std);
             }else{
                  System.out.println(" *-* Default SD value 500 used" );
             }
@@ -286,6 +287,7 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             int mean = 5000; // milisecond
             if (astraeaSpansSet.contains("mean")){
                 mean= astraeaSpansSet.get("mean").intValue();
+                System.out.println(" *-*mean value used:"+mean);
             }else{
                  System.out.println(" *-* Default mean value 5000 used");
             }
