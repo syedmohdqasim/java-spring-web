@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -275,20 +276,32 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             // sleep here
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
-            int std = 7;
-            int delay = 15; // milisecond
+            int std = 500;
+            if (astraeaSpansSet.contains("sd")){
+                std= astraeaSpansSet.get("sd").intValue();
+            }else{
+                 System.out.println(" *-* Default SD value 500 used" );
+            }
+
+            int mean = 5000; // milisecond
+            if (astraeaSpansSet.contains("mean")){
+                mean= astraeaSpansSet.get("mean").intValue();
+            }else{
+                 System.out.println(" *-* Default mean value 5000 used");
+            }
 
             Random randomno = new Random();
-            double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
+            double sample = randomno.nextGaussian()*std+mean; // change 15=std and 60 = mean
             // System.out.println("*-* Gaussian triggered for client span "+ spanId + " with " + String.valueOf(sample));
 
             int newdelay = (int)sample;
             if(newdelay > 0){
                 try{
-                    Thread.sleep(newdelay);
+                    TimeUnit.MICROSECONDS.sleep(newdelay);
                     // System.out.println("*-* Uyandim client");
                 }
                 catch(InterruptedException e){
+                    e.printStackTrace();
                     // System.out.println("*-* Thread uyuma problemi! client");
                 }
             }
