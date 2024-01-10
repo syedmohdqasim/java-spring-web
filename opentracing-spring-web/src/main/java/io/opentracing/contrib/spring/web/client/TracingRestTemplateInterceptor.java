@@ -282,6 +282,10 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
                 System.out.println(" *-*sd value used:"+std);
             }else{
                  System.out.println(" *-* Default SD value 500 used" );
+                for (Map.Entry<String, Float> entry : astraeaSpansSet.entrySet()) {
+                    System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                }
+
             }
 
             int mean = 5000; // milisecond
@@ -290,6 +294,9 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
                 System.out.println(" *-*mean value used:"+mean);
             }else{
                  System.out.println(" *-* Default mean value 5000 used");
+                for (Map.Entry<String, Float> entry : astraeaSpansSet.entrySet()) {
+                    System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                }
             }
 
             Random randomno = new Random();
