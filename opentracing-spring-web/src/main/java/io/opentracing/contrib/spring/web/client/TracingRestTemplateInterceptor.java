@@ -277,7 +277,7 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
             int std = 500;
-            if (astraeaSpansSet.contains("sd")){
+            if (astraeaSpansSet.containsKey("sd")){
                 std= astraeaSpansSet.get("sd").intValue();
                 System.out.println(" *-*sd value used:"+std);
             }else{
@@ -289,7 +289,7 @@ private static void downloadFile(String fileUrl, String destinationPath) throws 
             }
 
             int mean = 5000; // milisecond
-            if (astraeaSpansSet.contains("mean")){
+            if (astraeaSpansSet.containsKey("mean")){
                 mean= astraeaSpansSet.get("mean").intValue();
                 System.out.println(" *-*mean value used:"+mean);
             }else{
