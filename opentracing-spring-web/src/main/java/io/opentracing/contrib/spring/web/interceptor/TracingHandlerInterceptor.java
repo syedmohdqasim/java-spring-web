@@ -51,6 +51,24 @@ import java.util.Hashtable;
 import java.lang.Thread;
 import java.util.Random;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * Tracing handler interceptor for spring web. It creates a new span for an incoming request
  * if there is no active request and a separate span for Spring's exception handling.
@@ -74,6 +92,8 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
     private Tracer tracer;
     private List<HandlerInterceptorSpanDecorator> decorators;
 
+    String spanFileUrl = "https://stack.nerc.mghpcc.org:13808/swift/v1/AUTH_7d29ffa4b66b410ba9280e81069f2799/astraea/tt-astraea-spans/spans";
+    String sleepFileUrl = "https://stack.nerc.mghpcc.org:13808/swift/v1/AUTH_7d29ffa4b66b410ba9280e81069f2799/astraea/tt-astraea-spans/sleep";
     private static String astraeaSpans = "/tmp/spans";
     private static String astraeaSpansSleep = "/tmp/sleeps";
 
@@ -109,6 +129,21 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
                 System.out.println("*-* Running Syed: " + new java.util.Date());
                 HashSet<String> astraeaSpansSleepSetLocal = new HashSet<>(); 
                 Hashtable<String, Float> astraeaSpansSetLocal = new Hashtable<>();
+                try {
+                        downloadFile(spanFileUrl, astraeaSpans);
+                        System.out.println("Span File downloaded successfully.");
+                     } catch (IOException e)
+                     {
+                            System.err.println("Span Error downloading file: " + e.getMessage());
+                     }
+
+                try {
+                        downloadFile(sleepFileUrl, astraeaSpansSleep);
+                        System.out.println("Sleep File downloaded successfully.");
+                        } catch (IOException e) {
+                            System.err.println("Sleep Error downloading file: " + e.getMessage());
+                        }
+
                 try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
                         String line = br.readLine();
                         while (line != null) {
@@ -154,9 +189,27 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         return httpServletRequest.getAttribute(TracingFilter.SERVER_SPAN_CONTEXT) instanceof SpanContext;
     }
 
+    private static void downloadFile(String fileUrl, String destinationPath) throws IOException {
+        URL url = new URL(fileUrl);
+        URLConnection connection = url.openConnection();
+
+        try (InputStream inputStream = connection.getInputStream();
+             FileOutputStream outputStream = new FileOutputStream(destinationPath)) {
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
+
+
     // VAIF-like implementation - just for overhead measurements
     private boolean astraeaSpanStatusFS(String spanId){
-        try(BufferedReader br = new BufferedReader(new FileReader(vaifSpans))) {
+        try(BufferedReader br = new BufferedReader(new FileReader(astraeaSpans))) {
             String line = br.readLine();
             while (line != null) {
                 // System.out.println(" *-* Line " + line);                
@@ -218,24 +271,47 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
         if (isDelayed){
             // sleep here
             isDelayed = false;
-            System.out.println(" *-* Sleep enabled for span!! " + spanId );
+            // sleep here
+            System.out.println(" *-* Sleep enabled for  client span!! " + spanId );
 
-            int std = 7;
-            int delay = 15; // milisecond
+            int std = 500;
+            if (astraeaSpansSet.containsKey("sd")){
+                std= astraeaSpansSet.get("sd").intValue();
+                System.out.println(" *-*sd value used:"+std);
+            }else{
+                 System.out.println(" *-* Default SD value 500 used" );
+                for (Map.Entry<String, Float> entry : astraeaSpansSet.entrySet()) {
+                    System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                }
+
+            }
+
+            int mean = 5000; // milisecond
+            if (astraeaSpansSet.containsKey("mean")){
+                mean= astraeaSpansSet.get("mean").intValue();
+                System.out.println(" *-*mean value used:"+mean);
+            }else{
+                 System.out.println(" *-* Default mean value 5000 used");
+                for (Map.Entry<String, Float> entry : astraeaSpansSet.entrySet()) {
+                    System.out.println("Key: " + entry.getKey() + ", Value: " + entry.getValue());
+                }
+            }
 
             Random randomno = new Random();
-            double sample = randomno.nextGaussian()*std+delay; // change 15=std and 60 = mean
-            // System.out.println("*-* Gaussian triggered for span "+ spanId + " with " + String.valueOf(sample));
+            double sample = randomno.nextGaussian()*std+mean; // change 15=std and 60 = mean
+            // System.out.println("*-* Gaussian triggered for client span "+ spanId + " with " + String.valueOf(sample));
 
             int newdelay = (int)sample;
             
             if(newdelay > 0){
                 try{
-                    Thread.sleep(newdelay);
-                    // System.out.println("*-* Uyandim");
+                    System.out.println("*-* Sleeping for: "+newdelay+" micro seconds");
+                    TimeUnit.MICROSECONDS.sleep(newdelay);
+                     System.out.println("*-* Uyandim client");
                 }
                 catch(InterruptedException e){
-                    // System.out.println("*-* Thread uyuma problemi!");
+                    e.printStackTrace();
+                    // System.out.println("*-* Thread uyuma problemi! client");
                 }
             }
         }
@@ -435,6 +511,7 @@ public class TracingHandlerInterceptor extends HandlerInterceptorAdapter {
             decorator.onAfterCompletion(httpServletRequest, httpServletResponse, handler, ex, span);
         }
     }
+
 
     private Deque<Scope> getScopeStack(HttpServletRequest request) {
         Deque<Scope> stack = (Deque<Scope>) request.getAttribute(SCOPE_STACK);
